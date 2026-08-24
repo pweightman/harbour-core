@@ -14,20 +14,36 @@ defined( 'ABSPATH' ) || exit;
  * @return WP_Post[]
  */
 function harbour_get_jobs( array $args = array() ): array {
-	$args = wp_parse_args( $args, array( 'service' => '', 'area' => '', 'count' => 12, 'featured' => false ) );
-	$q = array(
+	$args = wp_parse_args(
+		$args,
+		array(
+			'service'  => '',
+			'area'     => '',
+			'count'    => 12,
+			'featured' => false,
+		)
+	);
+	$q    = array(
 		'post_type'      => 'job',
 		'post_status'    => 'publish',
 		'posts_per_page' => (int) $args['count'],
 		'orderby'        => 'menu_order date',
 		'order'          => 'DESC',
 	);
-	$tax = array();
+	$tax  = array();
 	if ( $args['service'] ) {
-		$tax[] = array( 'taxonomy' => 'service_type', 'field' => 'slug', 'terms' => $args['service'] );
+		$tax[] = array(
+			'taxonomy' => 'service_type',
+			'field'    => 'slug',
+			'terms'    => $args['service'],
+		);
 	}
 	if ( $args['area'] ) {
-		$tax[] = array( 'taxonomy' => 'service_area', 'field' => 'slug', 'terms' => $args['area'] );
+		$tax[] = array(
+			'taxonomy' => 'service_area',
+			'field'    => 'slug',
+			'terms'    => $args['area'],
+		);
 	}
 	if ( $tax ) {
 		$tax['relation'] = 'AND';
@@ -58,12 +74,23 @@ function harbour_job_card( WP_Post $job ): string {
 		}
 		$alt = trim( $label . ' — ' . get_the_title( $job ) );
 		return '<figure class="job-shot"><span class="job-tag">' . esc_html( $label ) . '</span>'
-			. wp_get_attachment_image( $id, 'medium_large', false, array( 'alt' => $alt, 'loading' => 'lazy', 'decoding' => 'async' ) )
+			. wp_get_attachment_image(
+				$id,
+				'medium_large',
+				false,
+				array(
+					'alt'      => $alt,
+					'loading'  => 'lazy',
+					'decoding' => 'async',
+				)
+			)
 			. '</figure>';
 	};
 	ob_start();
 	echo '<article class="job-card reveal">';
 	echo '<div class="job-pair">';
+	// The $img closure returns wp_get_attachment_image() output plus esc_html'd labels.
+	// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
 	if ( $before && $after ) {
 		echo $img( $before, __( 'Before', 'harbour-core' ) ) . $img( $after, __( 'After', 'harbour-core' ) );
 	} elseif ( $after ) {
@@ -74,6 +101,7 @@ function harbour_job_card( WP_Post $job ): string {
 		echo get_the_post_thumbnail( $job, 'medium_large', array( 'loading' => 'lazy' ) );
 	}
 	echo '</div>';
+	// phpcs:enable WordPress.Security.EscapeOutput.OutputNotEscaped
 	echo '<div class="job-body"><h3>' . esc_html( get_the_title( $job ) ) . '</h3>';
 	if ( $job->post_content ) {
 		echo '<p>' . esc_html( wp_trim_words( wp_strip_all_tags( $job->post_content ), 26 ) ) . '</p>';
@@ -90,7 +118,12 @@ function harbour_job_card( WP_Post $job ): string {
 		if ( $id ) {
 			$src = wp_get_attachment_image_url( $id, 'large' );
 			if ( $src ) {
-				$objs[] = array( '@context' => 'https://schema.org', '@type' => 'ImageObject', 'contentUrl' => $src, 'name' => get_the_title( $job ) );
+				$objs[] = array(
+					'@context'   => 'https://schema.org',
+					'@type'      => 'ImageObject',
+					'contentUrl' => $src,
+					'name'       => get_the_title( $job ),
+				);
 			}
 		}
 	}
@@ -127,13 +160,24 @@ function harbour_jobs_grid( array $args = array() ): string {
  * @return string
  */
 function harbour_gallery_shortcode( $atts ): string {
-	$atts = shortcode_atts( array( 'service' => '', 'area' => '', 'count' => 12, 'featured' => '' ), $atts, 'harbour_gallery' );
-	return harbour_jobs_grid( array(
-		'service'  => sanitize_title( $atts['service'] ),
-		'area'     => sanitize_title( $atts['area'] ),
-		'count'    => (int) $atts['count'],
-		'featured' => ! empty( $atts['featured'] ),
-	) );
+	$atts = shortcode_atts(
+		array(
+			'service'  => '',
+			'area'     => '',
+			'count'    => 12,
+			'featured' => '',
+		),
+		$atts,
+		'harbour_gallery'
+	);
+	return harbour_jobs_grid(
+		array(
+			'service'  => sanitize_title( $atts['service'] ),
+			'area'     => sanitize_title( $atts['area'] ),
+			'count'    => (int) $atts['count'],
+			'featured' => ! empty( $atts['featured'] ),
+		)
+	);
 }
 add_shortcode( 'harbour_gallery', 'harbour_gallery_shortcode' );
 
@@ -147,7 +191,13 @@ function harbour_job_archive_order( $q ): void {
 		return;
 	}
 	if ( $q->is_post_type_archive( 'job' ) ) {
-		$q->set( 'orderby', array( 'menu_order' => 'ASC', 'date' => 'DESC' ) );
+		$q->set(
+			'orderby',
+			array(
+				'menu_order' => 'ASC',
+				'date'       => 'DESC',
+			)
+		);
 	}
 }
 add_action( 'pre_get_posts', 'harbour_job_archive_order' );

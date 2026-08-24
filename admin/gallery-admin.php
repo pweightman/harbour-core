@@ -8,9 +8,12 @@
 
 defined( 'ABSPATH' ) || exit;
 
-add_action( 'add_meta_boxes_job', function () {
-	add_meta_box( 'harbour_job', __( 'Before & after', 'harbour-core' ), 'harbour_job_metabox', 'job', 'normal', 'high' );
-} );
+add_action(
+	'add_meta_boxes_job',
+	function () {
+		add_meta_box( 'harbour_job', __( 'Before & after', 'harbour-core' ), 'harbour_job_metabox', 'job', 'normal', 'high' );
+	}
+);
 
 /**
  * Enqueue the media picker on the job edit screen.
@@ -59,14 +62,17 @@ function harbour_job_metabox( $post ): void {
 	echo '<p class="description">' . esc_html__( 'Add a short description in the main editor, and assign Service type / Service area terms so this job surfaces on the matching pages.', 'harbour-core' ) . '</p>';
 }
 
-add_action( 'save_post_job', function ( $post_id ) {
-	if ( ! isset( $_POST['harbour_job_meta_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['harbour_job_meta_nonce'] ) ), 'harbour_job_meta' ) ) {
-		return;
+add_action(
+	'save_post_job',
+	function ( $post_id ) {
+		if ( ! isset( $_POST['harbour_job_meta_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['harbour_job_meta_nonce'] ) ), 'harbour_job_meta' ) ) {
+			return;
+		}
+		if ( ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) || ! current_user_can( 'edit_post', $post_id ) ) {
+			return;
+		}
+		update_post_meta( $post_id, '_harbour_before', absint( wp_unslash( $_POST['harbour_before'] ?? 0 ) ) );
+		update_post_meta( $post_id, '_harbour_after', absint( wp_unslash( $_POST['harbour_after'] ?? 0 ) ) );
+		update_post_meta( $post_id, '_harbour_featured', empty( $_POST['harbour_featured'] ) ? '' : '1' );
 	}
-	if ( ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) || ! current_user_can( 'edit_post', $post_id ) ) {
-		return;
-	}
-	update_post_meta( $post_id, '_harbour_before', absint( wp_unslash( $_POST['harbour_before'] ?? 0 ) ) );
-	update_post_meta( $post_id, '_harbour_after', absint( wp_unslash( $_POST['harbour_after'] ?? 0 ) ) );
-	update_post_meta( $post_id, '_harbour_featured', empty( $_POST['harbour_featured'] ) ? '' : '1' );
-} );
+);

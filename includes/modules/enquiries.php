@@ -30,7 +30,7 @@ function harbour_render_enquiry_form( array $ctx = array() ): void {
 	$errors = $result['errors'] ?? array();
 	$old    = $result['old'] ?? array();
 
-	$val = static function ( string $key ) use ( $old ): string {
+	$val    = static function ( string $key ) use ( $old ): string {
 		return isset( $old[ $key ] ) ? esc_attr( $old[ $key ] ) : '';
 	};
 	$err_id = static function ( string $key ) use ( $errors ): string {
@@ -38,9 +38,14 @@ function harbour_render_enquiry_form( array $ctx = array() ): void {
 	};
 
 	$services = array(
-		'Pruning / crown reduction', 'Felling / tree removal', 'Stump grinding',
-		'Site clearance', 'Survey or report', 'Firewood',
-		'Storm damage — urgent', 'Not sure — please advise',
+		'Pruning / crown reduction',
+		'Felling / tree removal',
+		'Stump grinding',
+		'Site clearance',
+		'Survey or report',
+		'Firewood',
+		'Storm damage — urgent',
+		'Not sure — please advise',
 	);
 	?>
 	<form class="form-card" method="post" action="" enctype="multipart/form-data" novalidate>
@@ -58,25 +63,37 @@ function harbour_render_enquiry_form( array $ctx = array() ): void {
 		<div class="field-row">
 			<div class="field">
 				<label for="name"><?php esc_html_e( 'Your name', 'harbour-core' ); ?></label>
-				<input id="name" name="harbour_name" type="text" autocomplete="name" value="<?php echo $val( 'name' ); ?>" required <?php echo $err_id( 'name' ) ? 'aria-describedby="err-name" aria-invalid="true"' : ''; ?>>
-				<?php if ( isset( $errors['name'] ) ) : ?><span class="field-error" id="err-name"><?php echo esc_html( $errors['name'] ); ?></span><?php endif; ?>
+				<input id="name" name="harbour_name" type="text" autocomplete="name" value="<?php echo esc_attr( $val( 'name' ) ); ?>" required <?php echo $err_id( 'name' ) ? 'aria-describedby="err-name" aria-invalid="true"' : ''; ?>>
+				<?php
+				if ( isset( $errors['name'] ) ) :
+					?>
+					<span class="field-error" id="err-name"><?php echo esc_html( $errors['name'] ); ?></span><?php endif; ?>
 			</div>
 			<div class="field">
 				<label for="phone"><?php esc_html_e( 'Phone', 'harbour-core' ); ?></label>
-				<input id="phone" name="harbour_phone" type="tel" autocomplete="tel" value="<?php echo $val( 'phone' ); ?>" required <?php echo $err_id( 'phone' ) ? 'aria-describedby="err-phone" aria-invalid="true"' : ''; ?>>
-				<?php if ( isset( $errors['phone'] ) ) : ?><span class="field-error" id="err-phone"><?php echo esc_html( $errors['phone'] ); ?></span><?php endif; ?>
+				<input id="phone" name="harbour_phone" type="tel" autocomplete="tel" value="<?php echo esc_attr( $val( 'phone' ) ); ?>" required <?php echo $err_id( 'phone' ) ? 'aria-describedby="err-phone" aria-invalid="true"' : ''; ?>>
+				<?php
+				if ( isset( $errors['phone'] ) ) :
+					?>
+					<span class="field-error" id="err-phone"><?php echo esc_html( $errors['phone'] ); ?></span><?php endif; ?>
 			</div>
 		</div>
 		<div class="field-row">
 			<div class="field">
 				<label for="email"><?php esc_html_e( 'Email', 'harbour-core' ); ?></label>
-				<input id="email" name="harbour_email" type="email" autocomplete="email" value="<?php echo $val( 'email' ); ?>" required <?php echo $err_id( 'email' ) ? 'aria-describedby="err-email" aria-invalid="true"' : ''; ?>>
-				<?php if ( isset( $errors['email'] ) ) : ?><span class="field-error" id="err-email"><?php echo esc_html( $errors['email'] ); ?></span><?php endif; ?>
+				<input id="email" name="harbour_email" type="email" autocomplete="email" value="<?php echo esc_attr( $val( 'email' ) ); ?>" required <?php echo $err_id( 'email' ) ? 'aria-describedby="err-email" aria-invalid="true"' : ''; ?>>
+				<?php
+				if ( isset( $errors['email'] ) ) :
+					?>
+					<span class="field-error" id="err-email"><?php echo esc_html( $errors['email'] ); ?></span><?php endif; ?>
 			</div>
 			<div class="field">
 				<label for="postcode"><?php esc_html_e( 'Postcode', 'harbour-core' ); ?> <span class="hint"><?php esc_html_e( 'so we know the travel', 'harbour-core' ); ?></span></label>
-				<input id="postcode" name="harbour_postcode" type="text" autocomplete="postal-code" value="<?php echo $val( 'postcode' ); ?>" required <?php echo $err_id( 'postcode' ) ? 'aria-describedby="err-postcode" aria-invalid="true"' : ''; ?>>
-				<?php if ( isset( $errors['postcode'] ) ) : ?><span class="field-error" id="err-postcode"><?php echo esc_html( $errors['postcode'] ); ?></span><?php endif; ?>
+				<input id="postcode" name="harbour_postcode" type="text" autocomplete="postal-code" value="<?php echo esc_attr( $val( 'postcode' ) ); ?>" required <?php echo $err_id( 'postcode' ) ? 'aria-describedby="err-postcode" aria-invalid="true"' : ''; ?>>
+				<?php
+				if ( isset( $errors['postcode'] ) ) :
+					?>
+					<span class="field-error" id="err-postcode"><?php echo esc_html( $errors['postcode'] ); ?></span><?php endif; ?>
 			</div>
 		</div>
 		<div class="field">
@@ -87,7 +104,10 @@ function harbour_render_enquiry_form( array $ctx = array() ): void {
 					<option <?php selected( $old['service'] ?? '', $svc ); ?>><?php echo esc_html( $svc ); ?></option>
 				<?php endforeach; ?>
 			</select>
-			<?php if ( isset( $errors['service'] ) ) : ?><span class="field-error" id="err-service"><?php echo esc_html( $errors['service'] ); ?></span><?php endif; ?>
+			<?php
+			if ( isset( $errors['service'] ) ) :
+				?>
+				<span class="field-error" id="err-service"><?php echo esc_html( $errors['service'] ); ?></span><?php endif; ?>
 		</div>
 		<div class="field">
 			<label for="msg"><?php esc_html_e( 'Anything else we should know?', 'harbour-core' ); ?></label>
@@ -96,13 +116,19 @@ function harbour_render_enquiry_form( array $ctx = array() ): void {
 		<div class="field">
 			<label for="photos"><?php esc_html_e( 'Photos', 'harbour-core' ); ?> <span class="hint"><?php esc_html_e( 'optional, JPG/PNG/WebP, up to 5', 'harbour-core' ); ?></span></label>
 			<div class="dropzone"><b><?php esc_html_e( 'Add photos', 'harbour-core' ); ?></b> — <?php esc_html_e( 'drag them here or tap to browse', 'harbour-core' ); ?><input id="photos" name="harbour_photos[]" type="file" accept="image/jpeg,image/png,image/webp" multiple></div>
-			<?php if ( isset( $errors['photos'] ) ) : ?><span class="field-error"><?php echo esc_html( $errors['photos'] ); ?></span><?php endif; ?>
+			<?php
+			if ( isset( $errors['photos'] ) ) :
+				?>
+				<span class="field-error"><?php echo esc_html( $errors['photos'] ); ?></span><?php endif; ?>
 		</div>
 		<label class="consent" style="margin-bottom:var(--s-5)">
 			<input type="checkbox" name="harbour_consent" value="1" required <?php checked( ! empty( $old['consent'] ) ); ?>>
 			<span><?php esc_html_e( "I'm happy for Harbour Tree Care to contact me about this enquiry. We don't share details with anyone else.", 'harbour-core' ); ?></span>
 		</label>
-		<?php if ( isset( $errors['consent'] ) ) : ?><span class="field-error" id="err-consent"><?php echo esc_html( $errors['consent'] ); ?></span><?php endif; ?>
+		<?php
+		if ( isset( $errors['consent'] ) ) :
+			?>
+			<span class="field-error" id="err-consent"><?php echo esc_html( $errors['consent'] ); ?></span><?php endif; ?>
 
 		<?php harbour_honeypot_fields(); ?>
 		<input type="hidden" name="harbour_action" value="enquiry">
@@ -124,7 +150,7 @@ function harbour_maybe_process_enquiry(): void {
 	if ( 'POST' !== ( $_SERVER['REQUEST_METHOD'] ?? '' ) ) {
 		return;
 	}
-	if ( 'enquiry' !== ( $_POST['harbour_action'] ?? '' ) ) {
+	if ( 'enquiry' !== ( $_POST['harbour_action'] ?? '' ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- routing only; nonce verified in processor.
 		return;
 	}
 	$result = harbour_process_enquiry();
@@ -143,8 +169,17 @@ add_action( 'template_redirect', 'harbour_maybe_process_enquiry' );
  */
 function harbour_process_enquiry(): array {
 	$fail = static function ( array $errors, array $old ): array {
-		return array( 'ok' => false, 'errors' => $errors, 'old' => $old );
+		return array(
+			'ok'     => false,
+			'errors' => $errors,
+			'old'    => $old,
+		);
 	};
+
+	// Verify nonce before touching any submitted data.
+	if ( ! isset( $_POST['harbour_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['harbour_nonce'] ) ), 'harbour_enquiry' ) ) {
+		return $fail( array( 'name' => __( 'Your session expired — please try again.', 'harbour-core' ) ), array() );
+	}
 
 	$old = array(
 		'name'     => sanitize_text_field( wp_unslash( $_POST['harbour_name'] ?? '' ) ),
@@ -156,10 +191,6 @@ function harbour_process_enquiry(): array {
 		'consent'  => ! empty( $_POST['harbour_consent'] ),
 	);
 
-	// Nonce.
-	if ( ! isset( $_POST['harbour_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['harbour_nonce'] ) ), 'harbour_enquiry' ) ) {
-		return $fail( array( 'name' => __( 'Your session expired — please try again.', 'harbour-core' ) ), $old );
-	}
 	// Honeypot + timing.
 	if ( ! harbour_passes_honeypot( wp_unslash( $_POST ) ) ) {
 		return $fail( array( 'name' => __( 'Something looked off with that submission. Please try again.', 'harbour-core' ) ), $old );
@@ -201,13 +232,16 @@ function harbour_process_enquiry(): array {
 	}
 
 	// Create the record first — it must survive a mail failure.
-	$town  = harbour_normalize_postcode( $old['postcode'] );
-	$title = sprintf( '%s — %s — %s', $old['name'], $town, wp_date( 'j M Y' ) );
-	$post_id = wp_insert_post( array(
-		'post_type'   => 'enquiry',
-		'post_status' => 'publish',
-		'post_title'  => $title,
-	), true );
+	$town    = harbour_normalize_postcode( $old['postcode'] );
+	$title   = sprintf( '%s — %s — %s', $old['name'], $town, wp_date( 'j M Y' ) );
+	$post_id = wp_insert_post(
+		array(
+			'post_type'   => 'enquiry',
+			'post_status' => 'publish',
+			'post_title'  => $title,
+		),
+		true
+	);
 
 	if ( is_wp_error( $post_id ) ) {
 		return $fail( array( 'name' => __( 'Sorry — we could not save that. Please ring the yard.', 'harbour-core' ) ), $old );
@@ -228,7 +262,12 @@ function harbour_process_enquiry(): array {
 
 	// Attach uploaded photos.
 	foreach ( $upload['attachment_ids'] as $att_id ) {
-		wp_update_post( array( 'ID' => $att_id, 'post_parent' => $post_id ) );
+		wp_update_post(
+			array(
+				'ID'          => $att_id,
+				'post_parent' => $post_id,
+			)
+		);
 		update_post_meta( $att_id, '_harbour_enquiry_photo', 1 );
 	}
 
@@ -244,9 +283,13 @@ function harbour_process_enquiry(): array {
  * @return array ['attachment_ids'=>int[], 'error'=>string]
  */
 function harbour_handle_enquiry_uploads(): array {
-	$out = array( 'attachment_ids' => array(), 'error' => '' );
+	$out = array(
+		'attachment_ids' => array(),
+		'error'          => '',
+	);
 
-	if ( empty( $_FILES['harbour_photos'] ) || empty( $_FILES['harbour_photos']['name'][0] ) ) {
+	// Nonce is verified in harbour_process_enquiry() before this is called.
+	if ( empty( $_FILES['harbour_photos'] ) || empty( $_FILES['harbour_photos']['name'][0] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		return $out;
 	}
 
@@ -254,7 +297,7 @@ function harbour_handle_enquiry_uploads(): array {
 	require_once ABSPATH . 'wp-admin/includes/image.php';
 	require_once ABSPATH . 'wp-admin/includes/media.php';
 
-	$files   = $_FILES['harbour_photos'];
+	$files   = $_FILES['harbour_photos']; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- nonce verified by caller.
 	$count   = count( array_filter( (array) $files['name'] ) );
 	$allowed = array( 'image/jpeg', 'image/png', 'image/webp' );
 	$max     = 10 * MB_IN_BYTES;
@@ -281,7 +324,7 @@ function harbour_handle_enquiry_uploads(): array {
 			return $out;
 		}
 
-		$single = array(
+		$single                   = array(
 			'name'     => $files['name'][ $i ],
 			'type'     => $mime,
 			'tmp_name' => $files['tmp_name'][ $i ],
@@ -347,7 +390,7 @@ function harbour_strip_exif( int $attachment_id ): void {
  */
 function harbour_notify_enquiry( int $post_id, array $data, array $atts ): void {
 	$recipients = harbour_setting( 'enquiries', 'notify_emails', harbour_setting( 'business', 'email', get_option( 'admin_email' ) ) );
-	$to = array_filter( array_map( 'trim', explode( ',', (string) $recipients ) ) );
+	$to         = array_filter( array_map( 'trim', explode( ',', (string) $recipients ) ) );
 	if ( empty( $to ) ) {
 		$to = array( get_option( 'admin_email' ) );
 	}

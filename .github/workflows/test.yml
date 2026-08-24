@@ -25,3 +25,6 @@ jobs:
 
       - name: PHPUnit
         run: vendor/bin/phpunit --configuration phpunit.xml.dist
+
+      - name: PHPCS (WordPress-Extra)
+        run: vendor/bin/phpcs

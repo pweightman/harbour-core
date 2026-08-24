@@ -58,11 +58,26 @@ function harbour_parse_price( string $price ): ?float {
 function harbour_order_total( ?float $unit_price, int $qty, int $min = 1 ): array {
 	$min = max( 1, $min );
 	if ( $qty < 1 ) {
-		return array( 'valid' => false, 'qty' => $qty, 'total' => null, 'reason' => 'quantity' );
+		return array(
+			'valid'  => false,
+			'qty'    => $qty,
+			'total'  => null,
+			'reason' => 'quantity',
+		);
 	}
 	if ( $qty < $min ) {
-		return array( 'valid' => false, 'qty' => $qty, 'total' => null, 'reason' => 'min_order' );
+		return array(
+			'valid'  => false,
+			'qty'    => $qty,
+			'total'  => null,
+			'reason' => 'min_order',
+		);
 	}
 	$total = ( null === $unit_price ) ? null : round( $unit_price * $qty, 2 );
-	return array( 'valid' => true, 'qty' => $qty, 'total' => $total, 'reason' => '' );
+	return array(
+		'valid'  => true,
+		'qty'    => $qty,
+		'total'  => $total,
+		'reason' => '',
+	);
 }
