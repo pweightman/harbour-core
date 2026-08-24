@@ -20,16 +20,16 @@ function harbour_output_schema(): void {
 		return;
 	}
 
-	$name  = harbour_setting( 'business', 'name', get_bloginfo( 'name' ) );
-	$phone = harbour_setting( 'business', 'phone_yard', '' );
-	$email = harbour_setting( 'business', 'email', '' );
+	$name   = harbour_setting( 'business', 'name', get_bloginfo( 'name' ) );
+	$phone  = harbour_setting( 'business', 'phone_yard', '' );
+	$email  = harbour_setting( 'business', 'email', '' );
 	$biz_id = home_url( '/#business' );
 
 	$business = array(
-		'@type'    => array( 'LocalBusiness', 'HomeAndConstructionBusiness' ),
-		'@id'      => $biz_id,
-		'name'     => $name,
-		'url'      => home_url( '/' ),
+		'@type'      => array( 'LocalBusiness', 'HomeAndConstructionBusiness' ),
+		'@id'        => $biz_id,
+		'name'       => $name,
+		'url'        => home_url( '/' ),
 		'areaServed' => array( 'Leicestershire', 'Warwickshire', 'Northamptonshire', 'Nottinghamshire', 'Derbyshire' ),
 	);
 	if ( $phone ) {
@@ -38,21 +38,27 @@ function harbour_output_schema(): void {
 	if ( $email ) {
 		$business['email'] = $email;
 	}
-	$address = array_filter( array(
-		'@type'           => 'PostalAddress',
-		'streetAddress'   => trim( harbour_setting( 'business', 'addr_line1', '' ) . ' ' . harbour_setting( 'business', 'addr_line2', '' ) ),
-		'addressLocality' => harbour_setting( 'business', 'addr_line2', '' ),
-		'addressRegion'   => harbour_setting( 'business', 'addr_county', '' ),
-		'postalCode'      => harbour_setting( 'business', 'addr_post', '' ),
-		'addressCountry'  => 'GB',
-	) );
+	$address = array_filter(
+		array(
+			'@type'           => 'PostalAddress',
+			'streetAddress'   => trim( harbour_setting( 'business', 'addr_line1', '' ) . ' ' . harbour_setting( 'business', 'addr_line2', '' ) ),
+			'addressLocality' => harbour_setting( 'business', 'addr_line2', '' ),
+			'addressRegion'   => harbour_setting( 'business', 'addr_county', '' ),
+			'postalCode'      => harbour_setting( 'business', 'addr_post', '' ),
+			'addressCountry'  => 'GB',
+		)
+	);
 	if ( count( $address ) > 1 ) {
 		$business['address'] = $address;
 	}
-	$same_as = array_values( array_filter( array(
-		harbour_setting( 'business', 'facebook', '' ),
-		harbour_setting( 'business', 'instagram', '' ),
-	) ) );
+	$same_as = array_values(
+		array_filter(
+			array(
+				harbour_setting( 'business', 'facebook', '' ),
+				harbour_setting( 'business', 'instagram', '' ),
+			)
+		)
+	);
 	if ( $same_as ) {
 		$business['sameAs'] = $same_as;
 	}
@@ -60,7 +66,7 @@ function harbour_output_schema(): void {
 	if ( $logo ) {
 		$src = wp_get_attachment_image_url( $logo, 'full' );
 		if ( $src ) {
-			$business['logo'] = $src;
+			$business['logo']  = $src;
 			$business['image'] = $src;
 		}
 	}
@@ -77,25 +83,37 @@ function harbour_output_schema(): void {
 
 	// Breadcrumbs (Home → current) on non-front pages.
 	if ( ! is_front_page() ) {
-		$items = array(
-			array( '@type' => 'ListItem', 'position' => 1, 'name' => __( 'Home', 'harbour-core' ), 'item' => home_url( '/' ) ),
+		$items   = array(
+			array(
+				'@type'    => 'ListItem',
+				'position' => 1,
+				'name'     => __( 'Home', 'harbour-core' ),
+				'item'     => home_url( '/' ),
+			),
 		);
-		$title = wp_get_document_title();
-		$items[] = array( '@type' => 'ListItem', 'position' => 2, 'name' => wp_strip_all_tags( $title ), 'item' => home_url( add_query_arg( array(), $GLOBALS['wp']->request ?? '' ) ) );
-		$graph[] = array( '@type' => 'BreadcrumbList', 'itemListElement' => $items );
+		$title   = wp_get_document_title();
+		$items[] = array(
+			'@type'    => 'ListItem',
+			'position' => 2,
+			'name'     => wp_strip_all_tags( $title ),
+			'item'     => home_url( add_query_arg( array(), $GLOBALS['wp']->request ?? '' ) ),
+		);
+		$graph[] = array(
+			'@type'           => 'BreadcrumbList',
+			'itemListElement' => $items,
+		);
 	}
-
 
 	// Content-derived schema on singular service/area pages.
 	if ( is_singular( array( 'service', 'area' ) ) ) {
 		$pid = get_queried_object_id();
 
 		$service = array(
-			'@type'    => 'Service',
-			'name'     => get_the_title( $pid ),
-			'provider' => array( '@id' => $biz_id ),
+			'@type'      => 'Service',
+			'name'       => get_the_title( $pid ),
+			'provider'   => array( '@id' => $biz_id ),
 			'areaServed' => is_singular( 'area' ) ? get_the_title( $pid ) : array( 'Leicestershire', 'Warwickshire', 'Northamptonshire' ),
-			'url'      => get_permalink( $pid ),
+			'url'        => get_permalink( $pid ),
 		);
 		$graph[] = $service;
 
@@ -109,11 +127,17 @@ function harbour_output_schema(): void {
 				$items[] = array(
 					'@type'          => 'Question',
 					'name'           => $row['q'],
-					'acceptedAnswer' => array( '@type' => 'Answer', 'text' => $row['a'] ),
+					'acceptedAnswer' => array(
+						'@type' => 'Answer',
+						'text'  => $row['a'],
+					),
 				);
 			}
 			if ( $items ) {
-				$graph[] = array( '@type' => 'FAQPage', 'mainEntity' => $items );
+				$graph[] = array(
+					'@type'      => 'FAQPage',
+					'mainEntity' => $items,
+				);
 			}
 		}
 	}

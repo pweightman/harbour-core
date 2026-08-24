@@ -20,20 +20,24 @@ const HARBOUR_OPTION = 'harbour_core_settings';
  * @param mixed  $default Default if unset.
  * @return mixed
  */
-function harbour_setting( string $group, string $key, $default = '' ) {
+function harbour_setting( string $group, string $key, $fallback = '' ) {
 	$all = get_option( HARBOUR_OPTION, array() );
-	return $all[ $group ][ $key ] ?? $default;
+	return $all[ $group ][ $key ] ?? $fallback;
 }
 
 /**
  * Register the option and its sanitise callback.
  */
 function harbour_register_settings(): void {
-	register_setting( 'harbour_settings_group', HARBOUR_OPTION, array(
-		'type'              => 'array',
-		'sanitize_callback' => 'harbour_sanitize_settings',
-		'default'           => array(),
-	) );
+	register_setting(
+		'harbour_settings_group',
+		HARBOUR_OPTION,
+		array(
+			'type'              => 'array',
+			'sanitize_callback' => 'harbour_sanitize_settings',
+			'default'           => array(),
+		)
+	);
 }
 add_action( 'admin_init', 'harbour_register_settings' );
 
@@ -50,40 +54,40 @@ function harbour_sanitize_settings( $input ): array {
 
 	// Business.
 	if ( isset( $input['business'] ) && is_array( $input['business'] ) ) {
-		$b = $input['business'];
+		$b                    = $input['business'];
 		$existing['business'] = array(
-			'name'         => sanitize_text_field( $b['name'] ?? '' ),
-			'established'  => sanitize_text_field( $b['established'] ?? '' ),
-			'company_no'   => sanitize_text_field( $b['company_no'] ?? '' ),
-			'phone_yard'   => sanitize_text_field( $b['phone_yard'] ?? '' ),
-			'phone_mobile' => sanitize_text_field( $b['phone_mobile'] ?? '' ),
-			'email'        => sanitize_email( $b['email'] ?? '' ),
-			'addr_line1'   => sanitize_text_field( $b['addr_line1'] ?? '' ),
-			'addr_line2'   => sanitize_text_field( $b['addr_line2'] ?? '' ),
-			'addr_county'  => sanitize_text_field( $b['addr_county'] ?? '' ),
-			'addr_post'    => sanitize_text_field( $b['addr_post'] ?? '' ),
-			'yard_postcode'=> strtoupper( sanitize_text_field( $b['yard_postcode'] ?? '' ) ),
-			'hours'        => nl2br( esc_html( trim( wp_unslash( $b['hours'] ?? '' ) ) ), false ),
-			'facebook'     => esc_url_raw( $b['facebook'] ?? '' ),
-			'instagram'    => esc_url_raw( $b['instagram'] ?? '' ),
+			'name'          => sanitize_text_field( $b['name'] ?? '' ),
+			'established'   => sanitize_text_field( $b['established'] ?? '' ),
+			'company_no'    => sanitize_text_field( $b['company_no'] ?? '' ),
+			'phone_yard'    => sanitize_text_field( $b['phone_yard'] ?? '' ),
+			'phone_mobile'  => sanitize_text_field( $b['phone_mobile'] ?? '' ),
+			'email'         => sanitize_email( $b['email'] ?? '' ),
+			'addr_line1'    => sanitize_text_field( $b['addr_line1'] ?? '' ),
+			'addr_line2'    => sanitize_text_field( $b['addr_line2'] ?? '' ),
+			'addr_county'   => sanitize_text_field( $b['addr_county'] ?? '' ),
+			'addr_post'     => sanitize_text_field( $b['addr_post'] ?? '' ),
+			'yard_postcode' => strtoupper( sanitize_text_field( $b['yard_postcode'] ?? '' ) ),
+			'hours'         => nl2br( esc_html( trim( wp_unslash( $b['hours'] ?? '' ) ) ), false ),
+			'facebook'      => esc_url_raw( $b['facebook'] ?? '' ),
+			'instagram'     => esc_url_raw( $b['instagram'] ?? '' ),
 		);
 	}
 
 	// Enquiries.
 	if ( isset( $input['enquiries'] ) && is_array( $input['enquiries'] ) ) {
-		$e = $input['enquiries'];
-		$recipients = array_filter( array_map( 'sanitize_email', array_map( 'trim', explode( ',', $e['notify_emails'] ?? '' ) ) ) );
+		$e                     = $input['enquiries'];
+		$recipients            = array_filter( array_map( 'sanitize_email', array_map( 'trim', explode( ',', $e['notify_emails'] ?? '' ) ) ) );
 		$existing['enquiries'] = array(
-			'notify_emails'      => implode( ', ', $recipients ),
-			'ack_subject'        => sanitize_text_field( $e['ack_subject'] ?? '' ),
-			'ack_body'           => sanitize_textarea_field( $e['ack_body'] ?? '' ),
-			'retention_months'   => max( 1, absint( $e['retention_months'] ?? 24 ) ),
+			'notify_emails'    => implode( ', ', $recipients ),
+			'ack_subject'      => sanitize_text_field( $e['ack_subject'] ?? '' ),
+			'ack_body'         => sanitize_textarea_field( $e['ack_body'] ?? '' ),
+			'retention_months' => max( 1, absint( $e['retention_months'] ?? 24 ) ),
 		);
 	}
 
 	// Firewood.
 	if ( isset( $input['firewood'] ) && is_array( $input['firewood'] ) ) {
-		$f = $input['firewood'];
+		$f        = $input['firewood'];
 		$products = array();
 		if ( ! empty( $f['products'] ) && is_array( $f['products'] ) ) {
 			foreach ( $f['products'] as $row ) {
@@ -92,15 +96,15 @@ function harbour_sanitize_settings( $input ): array {
 					continue;
 				}
 				$products[] = array(
-					'name'        => $name,
-					'description' => sanitize_text_field( $row['description'] ?? '' ),
-					'price'       => sanitize_text_field( $row['price'] ?? '' ),
-					'availability'=> in_array( $row['availability'] ?? '', array( 'in', 'low', 'out' ), true ) ? $row['availability'] : 'in',
-					'min_order'   => max( 1, absint( $row['min_order'] ?? 1 ) ),
+					'name'         => $name,
+					'description'  => sanitize_text_field( $row['description'] ?? '' ),
+					'price'        => sanitize_text_field( $row['price'] ?? '' ),
+					'availability' => in_array( $row['availability'] ?? '', array( 'in', 'low', 'out' ), true ) ? $row['availability'] : 'in',
+					'min_order'    => max( 1, absint( $row['min_order'] ?? 1 ) ),
 				);
 			}
 		}
-		$slots = array_filter( array_map( 'sanitize_text_field', array_map( 'trim', explode( "\n", $f['slots'] ?? '' ) ) ) );
+		$slots                = array_filter( array_map( 'sanitize_text_field', array_map( 'trim', explode( "\n", $f['slots'] ?? '' ) ) ) );
 		$existing['firewood'] = array(
 			'products'     => $products,
 			'radius_inner' => max( 0, (float) ( $f['radius_inner'] ?? 12 ) ),
@@ -145,7 +149,7 @@ function harbour_dashboard_page(): void {
 		return;
 	}
 	$enquiries = wp_count_posts( 'enquiry' );
-	$new = isset( $enquiries->publish ) ? (int) $enquiries->publish : 0;
+	$new       = isset( $enquiries->publish ) ? (int) $enquiries->publish : 0;
 	echo '<div class="wrap"><h1>Harbour</h1>';
 	echo '<p>Enquiries, orders, reviews and business settings for Harbour Tree Care.</p>';
 	echo '<p><a class="button button-primary" href="' . esc_url( admin_url( 'edit.php?post_type=enquiry' ) ) . '">View enquiries</a> ';
@@ -160,13 +164,13 @@ function harbour_settings_page(): void {
 	if ( ! current_user_can( 'manage_options' ) ) {
 		return;
 	}
-	$tabs = array(
-		'business'  => 'Business',
-		'enquiries' => 'Enquiries',
-		'firewood'  => 'Firewood',
+	$tabs   = array(
+		'business'     => 'Business',
+		'enquiries'    => 'Enquiries',
+		'firewood'     => 'Firewood',
 		'integrations' => 'Integrations',
 	);
-	$active = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'business';
+	$active = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'business'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only tab switch on a settings page.
 	if ( ! isset( $tabs[ $active ] ) ) {
 		$active = 'business';
 	}
@@ -264,7 +268,11 @@ function harbour_settings_tab_firewood(): void {
 	$fw       = get_option( HARBOUR_OPTION, array() )['firewood'] ?? array();
 	$products = $fw['products'] ?? array();
 	$slots    = isset( $fw['slots'] ) ? implode( "\n", (array) $fw['slots'] ) : '';
-	$avail    = array( 'in' => 'In stock', 'low' => 'Low', 'out' => 'Out of stock' );
+	$avail    = array(
+		'in'  => 'In stock',
+		'low' => 'Low',
+		'out' => 'Out of stock',
+	);
 
 	echo '<h2>' . esc_html__( 'Products', 'harbour-core' ) . '</h2>';
 	echo '<p class="description">' . esc_html__( 'Up to 6 firewood products. Leave the name blank to remove a row. Prices show as entered — include units (e.g. "£90").', 'harbour-core' ) . '</p>';

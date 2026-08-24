@@ -15,8 +15,8 @@ defined( 'ABSPATH' ) || exit;
  * @return string
  */
 function harbour_hero_heading( ?int $post_id = null ): string {
-	$post_id = $post_id ?: get_the_ID();
-	$h = get_post_meta( $post_id, '_harbour_hero_heading', true );
+	$post_id = $post_id ? $post_id : get_the_ID();
+	$h       = get_post_meta( $post_id, '_harbour_hero_heading', true );
 	return $h ? $h : get_the_title( $post_id );
 }
 
@@ -27,8 +27,8 @@ function harbour_hero_heading( ?int $post_id = null ): string {
  * @return array<int,array{q:string,a:string}>
  */
 function harbour_get_faq( ?int $post_id = null ): array {
-	$post_id = $post_id ?: get_the_ID();
-	$faq = get_post_meta( $post_id, '_harbour_faq', true );
+	$post_id = $post_id ? $post_id : get_the_ID();
+	$faq     = get_post_meta( $post_id, '_harbour_faq', true );
 	return is_array( $faq ) ? $faq : array();
 }
 

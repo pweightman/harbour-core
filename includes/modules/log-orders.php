@@ -44,14 +44,18 @@ function harbour_render_log_order_form(): void {
 	}
 
 	$val = static function ( $k ) use ( $old ) {
-		return isset( $old[ $k ] ) ? esc_attr( $old[ $k ] ) : '';
+		return (string) ( $old[ $k ] ?? '' );
 	};
 	?>
 	<form class="form-card" method="post" action="" novalidate>
 		<?php if ( $errors ) : ?>
 			<div class="form-errors" role="alert" tabindex="-1">
 				<strong><?php esc_html_e( 'Please check the following:', 'harbour-core' ); ?></strong>
-				<ul><?php foreach ( $errors as $f => $m ) : ?><li><a href="#lo-<?php echo esc_attr( $f ); ?>"><?php echo esc_html( $m ); ?></a></li><?php endforeach; ?></ul>
+				<ul>
+				<?php
+				foreach ( $errors as $f => $m ) :
+					?>
+					<li><a href="#lo-<?php echo esc_attr( $f ); ?>"><?php echo esc_html( $m ); ?></a></li><?php endforeach; ?></ul>
 			</div>
 		<?php endif; ?>
 
@@ -59,12 +63,16 @@ function harbour_render_log_order_form(): void {
 			<label for="lo-product"><?php esc_html_e( 'Which logs?', 'harbour-core' ); ?></label>
 			<select id="lo-product" name="harbour_product" required>
 				<option value=""><?php esc_html_e( 'Choose a product…', 'harbour-core' ); ?></option>
-				<?php foreach ( $products as $i => $p ) :
-					$out = 'out' === ( $p['availability'] ?? 'in' );
+				<?php
+				foreach ( $products as $i => $p ) :
+					$out   = 'out' === ( $p['availability'] ?? 'in' );
 					$label = $p['name'];
-					if ( ! empty( $p['price'] ) ) { $label .= ' — ' . $p['price']; }
-					if ( 'low' === ( $p['availability'] ?? '' ) ) { $label .= ' (low stock)'; }
-					if ( $out ) { $label .= ' (out of stock)'; }
+					if ( ! empty( $p['price'] ) ) {
+						$label .= ' — ' . $p['price']; }
+					if ( 'low' === ( $p['availability'] ?? '' ) ) {
+						$label .= ' (low stock)'; }
+					if ( $out ) {
+						$label .= ' (out of stock)'; }
 					?>
 					<option value="<?php echo esc_attr( $i ); ?>" <?php disabled( $out ); ?> <?php selected( (string) ( $old['product'] ?? '' ), (string) $i ); ?>><?php echo esc_html( $label ); ?></option>
 				<?php endforeach; ?>
@@ -73,11 +81,11 @@ function harbour_render_log_order_form(): void {
 		<div class="field-row">
 			<div class="field">
 				<label for="lo-qty"><?php esc_html_e( 'Quantity', 'harbour-core' ); ?></label>
-				<input id="lo-qty" name="harbour_qty" type="number" min="1" value="<?php echo $val( 'qty' ) ?: '1'; ?>" required>
+				<input id="lo-qty" name="harbour_qty" type="number" min="1" value="<?php echo esc_attr( $val( 'qty' ) ? $val( 'qty' ) : '1' ); ?>" required>
 			</div>
 			<div class="field">
 				<label for="lo-postcode"><?php esc_html_e( 'Delivery postcode', 'harbour-core' ); ?></label>
-				<input id="lo-postcode" name="harbour_postcode" type="text" autocomplete="postal-code" value="<?php echo $val( 'postcode' ); ?>" required>
+				<input id="lo-postcode" name="harbour_postcode" type="text" autocomplete="postal-code" value="<?php echo esc_attr( $val( 'postcode' ) ); ?>" required>
 			</div>
 		</div>
 		<?php if ( $slots ) : ?>
@@ -94,16 +102,16 @@ function harbour_render_log_order_form(): void {
 		<div class="field-row">
 			<div class="field">
 				<label for="lo-name"><?php esc_html_e( 'Your name', 'harbour-core' ); ?></label>
-				<input id="lo-name" name="harbour_name" type="text" autocomplete="name" value="<?php echo $val( 'name' ); ?>" required>
+				<input id="lo-name" name="harbour_name" type="text" autocomplete="name" value="<?php echo esc_attr( $val( 'name' ) ); ?>" required>
 			</div>
 			<div class="field">
 				<label for="lo-phone"><?php esc_html_e( 'Phone', 'harbour-core' ); ?></label>
-				<input id="lo-phone" name="harbour_phone" type="tel" autocomplete="tel" value="<?php echo $val( 'phone' ); ?>" required>
+				<input id="lo-phone" name="harbour_phone" type="tel" autocomplete="tel" value="<?php echo esc_attr( $val( 'phone' ) ); ?>" required>
 			</div>
 		</div>
 		<div class="field">
 			<label for="lo-email"><?php esc_html_e( 'Email', 'harbour-core' ); ?></label>
-			<input id="lo-email" name="harbour_email" type="email" autocomplete="email" value="<?php echo $val( 'email' ); ?>" required>
+			<input id="lo-email" name="harbour_email" type="email" autocomplete="email" value="<?php echo esc_attr( $val( 'email' ) ); ?>" required>
 		</div>
 		<div class="field">
 			<label for="lo-address"><?php esc_html_e( 'Delivery address', 'harbour-core' ); ?></label>
@@ -132,7 +140,7 @@ function harbour_render_log_order_form(): void {
  * Intercept a self-posted log order.
  */
 function harbour_maybe_process_log_order(): void {
-	if ( 'POST' !== ( $_SERVER['REQUEST_METHOD'] ?? '' ) || 'log_order' !== ( $_POST['harbour_action'] ?? '' ) ) {
+	if ( 'POST' !== ( $_SERVER['REQUEST_METHOD'] ?? '' ) || 'log_order' !== ( $_POST['harbour_action'] ?? '' ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- routing only; nonce verified in processor.
 		return;
 	}
 	$result = harbour_process_log_order();
@@ -151,7 +159,17 @@ add_action( 'template_redirect', 'harbour_maybe_process_log_order' );
  */
 function harbour_process_log_order(): array {
 	$products = harbour_firewood_products();
-	$old = array(
+
+	// Verify nonce before touching any submitted data.
+	if ( ! isset( $_POST['harbour_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['harbour_nonce'] ) ), 'harbour_log_order' ) ) {
+		return array(
+			'ok'     => false,
+			'errors' => array( 'product' => __( 'Your session expired — please try again.', 'harbour-core' ) ),
+			'old'    => array(),
+		);
+	}
+
+	$old  = array(
 		'product'  => sanitize_text_field( wp_unslash( $_POST['harbour_product'] ?? '' ) ),
 		'qty'      => absint( wp_unslash( $_POST['harbour_qty'] ?? 0 ) ),
 		'postcode' => sanitize_text_field( wp_unslash( $_POST['harbour_postcode'] ?? '' ) ),
@@ -164,12 +182,13 @@ function harbour_process_log_order(): array {
 		'consent'  => ! empty( $_POST['harbour_consent'] ),
 	);
 	$fail = static function ( $errors ) use ( $old ) {
-		return array( 'ok' => false, 'errors' => $errors, 'old' => $old );
+		return array(
+			'ok'     => false,
+			'errors' => $errors,
+			'old'    => $old,
+		);
 	};
 
-	if ( ! isset( $_POST['harbour_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['harbour_nonce'] ) ), 'harbour_log_order' ) ) {
-		return $fail( array( 'product' => __( 'Your session expired — please try again.', 'harbour-core' ) ) );
-	}
 	if ( ! harbour_passes_honeypot( wp_unslash( $_POST ) ) ) {
 		return $fail( array( 'product' => __( 'Something looked off with that submission. Please try again.', 'harbour-core' ) ) );
 	}
@@ -177,24 +196,32 @@ function harbour_process_log_order(): array {
 		return $fail( array( 'product' => __( 'Too many requests in a short time — please ring the yard instead.', 'harbour-core' ) ) );
 	}
 
-	$errors = array();
+	$errors  = array();
 	$product = ( '' !== $old['product'] && isset( $products[ (int) $old['product'] ] ) ) ? $products[ (int) $old['product'] ] : null;
 	if ( ! $product ) {
 		$errors['product'] = __( 'Please choose a product.', 'harbour-core' );
 	}
-	if ( '' === $old['name'] ) { $errors['name'] = __( 'Please tell us your name.', 'harbour-core' ); }
-	if ( '' === $old['phone'] ) { $errors['phone'] = __( 'Please give a phone number.', 'harbour-core' ); }
-	if ( ! is_email( $old['email'] ) ) { $errors['email'] = __( 'Please enter a valid email.', 'harbour-core' ); }
-	if ( '' === $old['address'] ) { $errors['address'] = __( 'Please give the delivery address.', 'harbour-core' ); }
-	if ( ! harbour_is_valid_uk_postcode( $old['postcode'] ) ) { $errors['postcode'] = __( 'Please enter a valid UK postcode.', 'harbour-core' ); }
-	if ( ! $old['consent'] ) { $errors['consent'] = __( 'Please tick the box so we can process your request.', 'harbour-core' ); }
+	if ( '' === $old['name'] ) {
+		$errors['name'] = __( 'Please tell us your name.', 'harbour-core' ); }
+	if ( '' === $old['phone'] ) {
+		$errors['phone'] = __( 'Please give a phone number.', 'harbour-core' ); }
+	if ( ! is_email( $old['email'] ) ) {
+		$errors['email'] = __( 'Please enter a valid email.', 'harbour-core' ); }
+	if ( '' === $old['address'] ) {
+		$errors['address'] = __( 'Please give the delivery address.', 'harbour-core' ); }
+	if ( ! harbour_is_valid_uk_postcode( $old['postcode'] ) ) {
+		$errors['postcode'] = __( 'Please enter a valid UK postcode.', 'harbour-core' ); }
+	if ( ! $old['consent'] ) {
+		$errors['consent'] = __( 'Please tick the box so we can process your request.', 'harbour-core' ); }
 
 	// Quantity / minimum order.
 	if ( $product ) {
 		$totals = harbour_order_total( harbour_parse_price( $product['price'] ?? '' ), $old['qty'], (int) ( $product['min_order'] ?? 1 ) );
 		if ( ! $totals['valid'] ) {
+			/* translators: 1: product name, 2: minimum quantity. */
+			$min_msg       = sprintf( __( 'The minimum order for %1$s is %2$d.', 'harbour-core' ), $product['name'], (int) ( $product['min_order'] ?? 1 ) );
 			$errors['qty'] = 'min_order' === $totals['reason']
-				? sprintf( __( 'The minimum order for %1$s is %2$d.', 'harbour-core' ), $product['name'], (int) ( $product['min_order'] ?? 1 ) )
+				? $min_msg
 				: __( 'Please enter a quantity of at least 1.', 'harbour-core' );
 		}
 	}
@@ -209,30 +236,37 @@ function harbour_process_log_order(): array {
 		return $fail( array( 'postcode' => $delivery['message'] ) );
 	}
 
-	$totals = harbour_order_total( harbour_parse_price( $product['price'] ?? '' ), $old['qty'], (int) ( $product['min_order'] ?? 1 ) );
-	$title  = sprintf( '%s — %s×%d — %s', $old['name'], $product['name'], $old['qty'], harbour_normalize_postcode( $old['postcode'] ) );
-	$post_id = wp_insert_post( array( 'post_type' => 'log_order', 'post_status' => 'publish', 'post_title' => $title ), true );
+	$totals  = harbour_order_total( harbour_parse_price( $product['price'] ?? '' ), $old['qty'], (int) ( $product['min_order'] ?? 1 ) );
+	$title   = sprintf( '%s — %s×%d — %s', $old['name'], $product['name'], $old['qty'], harbour_normalize_postcode( $old['postcode'] ) );
+	$post_id = wp_insert_post(
+		array(
+			'post_type'   => 'log_order',
+			'post_status' => 'publish',
+			'post_title'  => $title,
+		),
+		true
+	);
 	if ( is_wp_error( $post_id ) ) {
 		return $fail( array( 'product' => __( 'Sorry — we could not save that. Please ring the yard.', 'harbour-core' ) ) );
 	}
 
 	$meta = array(
-		'_harbour_product'   => $product['name'],
-		'_harbour_qty'       => $old['qty'],
-		'_harbour_unit_price'=> $product['price'] ?? '',
-		'_harbour_total'     => null === $totals['total'] ? '' : $totals['total'],
-		'_harbour_postcode'  => harbour_normalize_postcode( $old['postcode'] ),
-		'_harbour_distance'  => $delivery['distance'],
+		'_harbour_product'       => $product['name'],
+		'_harbour_qty'           => $old['qty'],
+		'_harbour_unit_price'    => $product['price'] ?? '',
+		'_harbour_total'         => null === $totals['total'] ? '' : $totals['total'],
+		'_harbour_postcode'      => harbour_normalize_postcode( $old['postcode'] ),
+		'_harbour_distance'      => $delivery['distance'],
 		'_harbour_delivery_band' => $delivery['status'],
-		'_harbour_slot'      => $old['slot'],
-		'_harbour_name'      => $old['name'],
-		'_harbour_phone'     => $old['phone'],
-		'_harbour_email'     => $old['email'],
-		'_harbour_address'   => $old['address'],
-		'_harbour_access'    => $old['access'],
-		'_harbour_status'    => 'new',
-		'_harbour_consent_time' => current_time( 'mysql' ),
-		'_harbour_consent_ip'   => harbour_client_ip(),
+		'_harbour_slot'          => $old['slot'],
+		'_harbour_name'          => $old['name'],
+		'_harbour_phone'         => $old['phone'],
+		'_harbour_email'         => $old['email'],
+		'_harbour_address'       => $old['address'],
+		'_harbour_access'        => $old['access'],
+		'_harbour_status'        => 'new',
+		'_harbour_consent_time'  => current_time( 'mysql' ),
+		'_harbour_consent_ip'    => harbour_client_ip(),
 	);
 	foreach ( $meta as $k => $v ) {
 		update_post_meta( $post_id, $k, $v );
@@ -248,23 +282,26 @@ function harbour_process_log_order(): array {
  */
 function harbour_notify_log_order( int $post_id, array $data, array $product, array $totals, array $delivery ): void {
 	$recipients = harbour_setting( 'enquiries', 'notify_emails', harbour_setting( 'business', 'email', get_option( 'admin_email' ) ) );
-	$to = array_filter( array_map( 'trim', explode( ',', (string) $recipients ) ) ) ?: array( get_option( 'admin_email' ) );
+	$to         = array_filter( array_map( 'trim', explode( ',', (string) $recipients ) ) );
+	if ( empty( $to ) ) {
+		$to = array( get_option( 'admin_email' ) );
+	}
 
 	$total_str = null === $totals['total'] ? __( 'to confirm', 'harbour-core' ) : '£' . number_format( (float) $totals['total'], 2 );
-	$rows = array(
-		__( 'Product', 'harbour-core' )  => $product['name'],
-		__( 'Quantity', 'harbour-core' ) => $data['qty'],
+	$rows      = array(
+		__( 'Product', 'harbour-core' )    => $product['name'],
+		__( 'Quantity', 'harbour-core' )   => $data['qty'],
 		__( 'Est. total', 'harbour-core' ) => $total_str,
-		__( 'Postcode', 'harbour-core' ) => $data['postcode'],
-		__( 'Distance', 'harbour-core' ) => null === $delivery['distance'] ? __( 'not checked', 'harbour-core' ) : $delivery['distance'] . ' mi (' . $delivery['status'] . ')',
-		__( 'Window', 'harbour-core' )   => $data['slot'] ?: __( 'no preference', 'harbour-core' ),
-		__( 'Name', 'harbour-core' )     => $data['name'],
-		__( 'Phone', 'harbour-core' )    => $data['phone'],
-		__( 'Email', 'harbour-core' )    => $data['email'],
-		__( 'Address', 'harbour-core' )  => $data['address'],
-		__( 'Access', 'harbour-core' )   => $data['access'],
+		__( 'Postcode', 'harbour-core' )   => $data['postcode'],
+		__( 'Distance', 'harbour-core' )   => null === $delivery['distance'] ? __( 'not checked', 'harbour-core' ) : $delivery['distance'] . ' mi (' . $delivery['status'] . ')',
+		__( 'Window', 'harbour-core' )     => $data['slot'] ? $data['slot'] : __( 'no preference', 'harbour-core' ),
+		__( 'Name', 'harbour-core' )       => $data['name'],
+		__( 'Phone', 'harbour-core' )      => $data['phone'],
+		__( 'Email', 'harbour-core' )      => $data['email'],
+		__( 'Address', 'harbour-core' )    => $data['address'],
+		__( 'Access', 'harbour-core' )     => $data['access'],
 	);
-	$body = '<p><strong>' . esc_html__( 'New firewood delivery request.', 'harbour-core' ) . '</strong></p><table cellpadding="6" style="border-collapse:collapse">';
+	$body      = '<p><strong>' . esc_html__( 'New firewood delivery request.', 'harbour-core' ) . '</strong></p><table cellpadding="6" style="border-collapse:collapse">';
 	foreach ( $rows as $label => $value ) {
 		$body .= '<tr><td style="border:1px solid #DEE4EC;font-weight:bold">' . esc_html( $label ) . '</td><td style="border:1px solid #DEE4EC">' . nl2br( esc_html( (string) $value ) ) . '</td></tr>';
 	}

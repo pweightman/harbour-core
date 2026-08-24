@@ -3,6 +3,9 @@
 All notable changes to this plugin are documented here. Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: [SemVer](https://semver.org/).
 
 ## [Unreleased]
+### Changed
+- Coding standards: the whole plugin is now clean against WordPress-Extra (PHPCS), enforced in CI. Nonce checks moved ahead of any `$_POST` read; output escaping, translator comments and short-ternary/style fixes throughout.
+
 ### Added
 - Firewood log ordering (Module 2): products/radius/slots/VAT settings, order form (pay on delivery), postcode delivery-radius check via postcodes.io + haversine (inside/outer/outside/unknown bands, 30-day coord cache), order storage, admin (columns, status new→confirmed→delivered→cancelled, delivery date, distance, CSV). Never loses an order if the geocoder is down.
 - Reviews (Module 3): testimonial post type, review-fields metabox with a standing "reviews must be genuine" notice, `[harbour_reviews]` shortcode + render function, Review schema (real, named reviews only) and AggregateRating (only from a real admin-entered figure — no fabrication).

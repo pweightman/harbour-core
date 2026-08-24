@@ -19,20 +19,36 @@ defined( 'ABSPATH' ) || exit;
  * @return WP_Post[]
  */
 function harbour_get_reviews( array $args = array() ): array {
-	$args = wp_parse_args( $args, array( 'service' => '', 'area' => '', 'count' => 3, 'featured' => false ) );
-	$q = array(
+	$args = wp_parse_args(
+		$args,
+		array(
+			'service'  => '',
+			'area'     => '',
+			'count'    => 3,
+			'featured' => false,
+		)
+	);
+	$q    = array(
 		'post_type'      => 'testimonial',
 		'post_status'    => 'publish',
 		'posts_per_page' => (int) $args['count'],
 		'orderby'        => 'menu_order date',
 		'order'          => 'DESC',
 	);
-	$tax = array();
+	$tax  = array();
 	if ( $args['service'] ) {
-		$tax[] = array( 'taxonomy' => 'service_type', 'field' => 'slug', 'terms' => $args['service'] );
+		$tax[] = array(
+			'taxonomy' => 'service_type',
+			'field'    => 'slug',
+			'terms'    => $args['service'],
+		);
 	}
 	if ( $args['area'] ) {
-		$tax[] = array( 'taxonomy' => 'service_area', 'field' => 'slug', 'terms' => $args['area'] );
+		$tax[] = array(
+			'taxonomy' => 'service_area',
+			'field'    => 'slug',
+			'terms'    => $args['area'],
+		);
 	}
 	if ( $tax ) {
 		$tax['relation'] = 'AND';
@@ -70,7 +86,8 @@ function harbour_reviews_render( array $args = array() ): string {
 		}
 		echo '<div class="quote reveal">';
 		if ( $rating >= 1 && $rating <= 5 ) {
-			echo '<div class="stars" aria-label="' . esc_attr( sprintf( __( '%d out of 5', 'harbour-core' ), $rating ) ) . '">';
+			/* translators: %d: star rating out of 5. */
+				echo '<div class="stars" aria-label="' . esc_attr( sprintf( __( '%d out of 5', 'harbour-core' ), $rating ) ) . '">';
 			for ( $i = 0; $i < $rating; $i++ ) {
 				echo '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3 6.5 7 .9-5 4.8 1.3 7L12 17.8 5.7 21.2 7 14.2 2 9.4l7-.9z"/></svg>';
 			}
@@ -83,14 +100,25 @@ function harbour_reviews_render( array $args = array() ): string {
 		// Review schema — only because this is a genuine, named review record.
 		if ( $reviewer ) {
 			$schema = array(
-				'@context'    => 'https://schema.org',
-				'@type'       => 'Review',
-				'author'      => array( '@type' => 'Person', 'name' => $reviewer ),
-				'reviewBody'  => $quote,
-				'itemReviewed'=> array( '@type' => 'LocalBusiness', 'name' => harbour_setting( 'business', 'name', get_bloginfo( 'name' ) ), '@id' => home_url( '/#business' ) ),
+				'@context'     => 'https://schema.org',
+				'@type'        => 'Review',
+				'author'       => array(
+					'@type' => 'Person',
+					'name'  => $reviewer,
+				),
+				'reviewBody'   => $quote,
+				'itemReviewed' => array(
+					'@type' => 'LocalBusiness',
+					'name'  => harbour_setting( 'business', 'name', get_bloginfo( 'name' ) ),
+					'@id'   => home_url( '/#business' ),
+				),
 			);
 			if ( $rating >= 1 && $rating <= 5 ) {
-				$schema['reviewRating'] = array( '@type' => 'Rating', 'ratingValue' => $rating, 'bestRating' => 5 );
+				$schema['reviewRating'] = array(
+					'@type'       => 'Rating',
+					'ratingValue' => $rating,
+					'bestRating'  => 5,
+				);
 			}
 			if ( $date ) {
 				$schema['datePublished'] = $date;
@@ -110,13 +138,24 @@ function harbour_reviews_render( array $args = array() ): string {
  * @return string
  */
 function harbour_reviews_shortcode( $atts ): string {
-	$atts = shortcode_atts( array( 'service' => '', 'area' => '', 'count' => 3, 'featured' => '' ), $atts, 'harbour_reviews' );
-	return harbour_reviews_render( array(
-		'service'  => sanitize_title( $atts['service'] ),
-		'area'     => sanitize_title( $atts['area'] ),
-		'count'    => (int) $atts['count'],
-		'featured' => ! empty( $atts['featured'] ),
-	) );
+	$atts = shortcode_atts(
+		array(
+			'service'  => '',
+			'area'     => '',
+			'count'    => 3,
+			'featured' => '',
+		),
+		$atts,
+		'harbour_reviews'
+	);
+	return harbour_reviews_render(
+		array(
+			'service'  => sanitize_title( $atts['service'] ),
+			'area'     => sanitize_title( $atts['area'] ),
+			'count'    => (int) $atts['count'],
+			'featured' => ! empty( $atts['featured'] ),
+		)
+	);
 }
 add_shortcode( 'harbour_reviews', 'harbour_reviews_shortcode' );
 
@@ -133,12 +172,16 @@ function harbour_aggregate_rating_schema(): void {
 		return; // No fabricated ratings.
 	}
 	$data = array(
-		'@context'        => 'https://schema.org',
-		'@type'           => 'AggregateRating',
-		'itemReviewed'    => array( '@type' => 'LocalBusiness', '@id' => home_url( '/#business' ), 'name' => harbour_setting( 'business', 'name', get_bloginfo( 'name' ) ) ),
-		'ratingValue'     => (float) $value,
-		'reviewCount'     => (int) $count,
-		'bestRating'      => 5,
+		'@context'     => 'https://schema.org',
+		'@type'        => 'AggregateRating',
+		'itemReviewed' => array(
+			'@type' => 'LocalBusiness',
+			'@id'   => home_url( '/#business' ),
+			'name'  => harbour_setting( 'business', 'name', get_bloginfo( 'name' ) ),
+		),
+		'ratingValue'  => (float) $value,
+		'reviewCount'  => (int) $count,
+		'bestRating'   => 5,
 	);
 	echo '<script type="application/ld+json">' . wp_json_encode( $data, JSON_UNESCAPED_SLASHES ) . '</script>' . "\n";
 }
