@@ -81,6 +81,35 @@ function harbour_sanitize_settings( $input ): array {
 		);
 	}
 
+	// Firewood.
+	if ( isset( $input['firewood'] ) && is_array( $input['firewood'] ) ) {
+		$f = $input['firewood'];
+		$products = array();
+		if ( ! empty( $f['products'] ) && is_array( $f['products'] ) ) {
+			foreach ( $f['products'] as $row ) {
+				$name = sanitize_text_field( $row['name'] ?? '' );
+				if ( '' === $name ) {
+					continue;
+				}
+				$products[] = array(
+					'name'        => $name,
+					'description' => sanitize_text_field( $row['description'] ?? '' ),
+					'price'       => sanitize_text_field( $row['price'] ?? '' ),
+					'availability'=> in_array( $row['availability'] ?? '', array( 'in', 'low', 'out' ), true ) ? $row['availability'] : 'in',
+					'min_order'   => max( 1, absint( $row['min_order'] ?? 1 ) ),
+				);
+			}
+		}
+		$slots = array_filter( array_map( 'sanitize_text_field', array_map( 'trim', explode( "\n", $f['slots'] ?? '' ) ) ) );
+		$existing['firewood'] = array(
+			'products'     => $products,
+			'radius_inner' => max( 0, (float) ( $f['radius_inner'] ?? 12 ) ),
+			'radius_outer' => max( 0, (float) ( $f['radius_outer'] ?? 20 ) ),
+			'slots'        => array_values( $slots ),
+			'vat_display'  => ! empty( $f['vat_display'] ) ? 1 : 0,
+		);
+	}
+
 	return $existing;
 }
 
@@ -160,13 +189,13 @@ function harbour_settings_page(): void {
 					harbour_settings_tab_enquiries();
 					break;
 				case 'firewood':
-					echo '<p>Firewood products, prices, delivery radius and slots are configured here in a later phase (PLUGIN-SPEC Module 2).</p>';
+					harbour_settings_tab_firewood();
 					break;
 				case 'integrations':
 					echo '<p>Transactional email (SMTP / Resend) credentials are defined as constants in <code>wp-config.php</code>, never stored in the database. See the plugin README.</p>';
 					break;
 			}
-			if ( in_array( $active, array( 'business', 'enquiries' ), true ) ) {
+			if ( in_array( $active, array( 'business', 'enquiries', 'firewood' ), true ) ) {
 				submit_button();
 			}
 			?>
@@ -225,5 +254,65 @@ function harbour_settings_tab_enquiries(): void {
 	harbour_field( 'enquiries', 'ack_subject', 'Autoresponder subject' );
 	harbour_field( 'enquiries', 'ack_body', 'Autoresponder message', 'textarea', 'Sent to the customer to acknowledge their enquiry.' );
 	harbour_field( 'enquiries', 'retention_months', 'Retention (months)', 'number', 'How long enquiries are kept before scheduled cleanup.' );
+	echo '</table>';
+}
+
+/**
+ * Firewood tab fields: products, delivery radius, slots, VAT display.
+ */
+function harbour_settings_tab_firewood(): void {
+	$fw       = get_option( HARBOUR_OPTION, array() )['firewood'] ?? array();
+	$products = $fw['products'] ?? array();
+	$slots    = isset( $fw['slots'] ) ? implode( "\n", (array) $fw['slots'] ) : '';
+	$avail    = array( 'in' => 'In stock', 'low' => 'Low', 'out' => 'Out of stock' );
+
+	echo '<h2>' . esc_html__( 'Products', 'harbour-core' ) . '</h2>';
+	echo '<p class="description">' . esc_html__( 'Up to 6 firewood products. Leave the name blank to remove a row. Prices show as entered — include units (e.g. "£90").', 'harbour-core' ) . '</p>';
+	for ( $i = 0; $i < 6; $i++ ) {
+		$p = $products[ $i ] ?? array();
+		$n = HARBOUR_OPTION . '[firewood][products][' . $i . ']';
+		echo '<div style="margin:0 0 14px;padding:10px;border:1px solid #dcdcde;border-radius:4px;max-width:760px">';
+		echo '<input type="text" name="' . esc_attr( $n ) . '[name]" value="' . esc_attr( $p['name'] ?? '' ) . '" placeholder="' . esc_attr__( 'Product name (e.g. Full load)', 'harbour-core' ) . '" class="regular-text" style="margin-right:8px">';
+		echo '<input type="text" name="' . esc_attr( $n ) . '[price]" value="' . esc_attr( $p['price'] ?? '' ) . '" placeholder="' . esc_attr__( 'Price', 'harbour-core' ) . '" style="width:90px;margin-right:8px">';
+		echo '<select name="' . esc_attr( $n ) . '[availability]" style="margin-right:8px">';
+		foreach ( $avail as $k => $label ) {
+			echo '<option value="' . esc_attr( $k ) . '" ' . selected( $p['availability'] ?? 'in', $k, false ) . '>' . esc_html( $label ) . '</option>';
+		}
+		echo '</select>';
+		echo '<label>' . esc_html__( 'Min qty', 'harbour-core' ) . ' <input type="number" min="1" name="' . esc_attr( $n ) . '[min_order]" value="' . esc_attr( $p['min_order'] ?? 1 ) . '" style="width:70px"></label>';
+		echo '<br><input type="text" name="' . esc_attr( $n ) . '[description]" value="' . esc_attr( $p['description'] ?? '' ) . '" placeholder="' . esc_attr__( 'Description (volume, species, seasoning)', 'harbour-core' ) . '" class="large-text" style="margin-top:8px">';
+		echo '</div>';
+	}
+
+	echo '<h2>' . esc_html__( 'Delivery', 'harbour-core' ) . '</h2>';
+	echo '<table class="form-table" role="presentation">';
+	printf(
+		'<tr><th><label for="ri">%s</label></th><td><input type="number" step="0.5" id="ri" name="%s[firewood][radius_inner]" value="%s" style="width:90px"> %s</td></tr>',
+		esc_html__( 'Inner radius (miles)', 'harbour-core' ),
+		esc_attr( HARBOUR_OPTION ),
+		esc_attr( $fw['radius_inner'] ?? 12 ),
+		esc_html__( 'within this, we deliver', 'harbour-core' )
+	);
+	printf(
+		'<tr><th><label for="ro">%s</label></th><td><input type="number" step="0.5" id="ro" name="%s[firewood][radius_outer]" value="%s" style="width:90px"> %s</td></tr>',
+		esc_html__( 'Outer radius (miles)', 'harbour-core' ),
+		esc_attr( HARBOUR_OPTION ),
+		esc_attr( $fw['radius_outer'] ?? 20 ),
+		esc_html__( 'between inner and outer, we confirm; beyond, we decline', 'harbour-core' )
+	);
+	printf(
+		'<tr><th><label for="slots">%s</label></th><td><textarea id="slots" name="%s[firewood][slots]" rows="4" class="large-text">%s</textarea><p class="description">%s</p></td></tr>',
+		esc_html__( 'Delivery windows', 'harbour-core' ),
+		esc_attr( HARBOUR_OPTION ),
+		esc_textarea( $slots ),
+		esc_html__( 'One per line, e.g. "Weekday morning". These are named slots, not a live calendar.', 'harbour-core' )
+	);
+	printf(
+		'<tr><th>%s</th><td><label><input type="checkbox" name="%s[firewood][vat_display]" value="1" %s> %s</label></td></tr>',
+		esc_html__( 'VAT', 'harbour-core' ),
+		esc_attr( HARBOUR_OPTION ),
+		checked( ! empty( $fw['vat_display'] ), true, false ),
+		esc_html__( 'Note that prices include VAT', 'harbour-core' )
+	);
 	echo '</table>';
 }

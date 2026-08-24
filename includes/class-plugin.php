@@ -24,11 +24,18 @@ final class Harbour_Core {
 		require_once $inc . 'meta.php';
 		require_once $inc . 'schema.php';
 		require_once $inc . 'content-tags.php';
+		require_once $inc . 'geo.php';
 		require_once $inc . 'modules/enquiries.php';
+		require_once $inc . 'modules/log-orders.php';
+		require_once $inc . 'modules/reviews.php';
+		require_once $inc . 'modules/gallery.php';
 
 		if ( is_admin() ) {
 			require_once HARBOUR_CORE_PATH . 'admin/enquiries-admin.php';
 			require_once HARBOUR_CORE_PATH . 'admin/content-meta.php';
+			require_once HARBOUR_CORE_PATH . 'admin/log-orders-admin.php';
+			require_once HARBOUR_CORE_PATH . 'admin/reviews-admin.php';
+			require_once HARBOUR_CORE_PATH . 'admin/gallery-admin.php';
 		}
 	}
 

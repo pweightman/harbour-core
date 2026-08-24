@@ -4,6 +4,12 @@ All notable changes to this plugin are documented here. Format: [Keep a Changelo
 
 ## [Unreleased]
 ### Added
+- Firewood log ordering (Module 2): products/radius/slots/VAT settings, order form (pay on delivery), postcode delivery-radius check via postcodes.io + haversine (inside/outer/outside/unknown bands, 30-day coord cache), order storage, admin (columns, status new→confirmed→delivered→cancelled, delivery date, distance, CSV). Never loses an order if the geocoder is down.
+- Reviews (Module 3): testimonial post type, review-fields metabox with a standing "reviews must be genuine" notice, `[harbour_reviews]` shortcode + render function, Review schema (real, named reviews only) and AggregateRating (only from a real admin-entered figure — no fabrication).
+- Job gallery (Module 4): job post type, before/after image-picker metabox (WP media modal), filterable grid + `[harbour_gallery]` shortcode, ImageObject pair schema, archive-job/single-job rendering.
+- PHPUnit: haversine, radius-band classification, price parsing and order-total/minimum-order rules (36 tests total).
+
+### Added
 - Hero-heading + repeatable FAQ meta for service/area posts, with editor metaboxes (`admin/content-meta.php`).
 - Service and FAQPage JSON-LD on singular service/area pages (areaServed set to the town on area pages).
 - Content template tags: `harbour_hero_heading()`, `harbour_get_faq()`, `harbour_render_faq()`.

@@ -16,7 +16,7 @@ defined( 'ABSPATH' ) || exit;
  */
 function harbour_register_taxonomies(): void {
 
-	register_taxonomy( 'service_type', array( 'service', 'area' ), array(
+	register_taxonomy( 'service_type', array( 'service', 'area', 'job', 'testimonial' ), array(
 		'labels'            => array(
 			'name'          => 'Service types',
 			'singular_name' => 'Service type',
@@ -29,7 +29,7 @@ function harbour_register_taxonomies(): void {
 		'rewrite'           => array( 'slug' => 'service-type', 'with_front' => false ),
 	) );
 
-	register_taxonomy( 'service_area', array( 'service', 'area' ), array(
+	register_taxonomy( 'service_area', array( 'service', 'area', 'job', 'testimonial' ), array(
 		'labels'            => array(
 			'name'          => 'Service areas',
 			'singular_name' => 'Service area',

@@ -55,6 +55,48 @@ function harbour_register_post_types(): void {
 		'map_meta_cap'        => true,
 		'show_in_rest'        => false,
 	) );
+
+	register_post_type( 'job', array(
+		'labels'       => harbour_pt_labels( 'Job', 'Our work' ),
+		'public'       => true,
+		'menu_icon'    => 'dashicons-camera',
+		'menu_position'=> 23,
+		'has_archive'  => 'our-work',
+		'rewrite'      => array( 'slug' => 'our-work', 'with_front' => false ),
+		'supports'     => array( 'title', 'editor', 'thumbnail', 'page-attributes', 'custom-fields' ),
+		'show_in_rest' => true,
+	) );
+
+	register_post_type( 'testimonial', array(
+		'labels'              => harbour_pt_labels( 'Review', 'Reviews' ),
+		'public'              => false,
+		'show_ui'             => true,
+		'show_in_menu'        => 'harbour',
+		'menu_icon'           => 'dashicons-star-filled',
+		'publicly_queryable'  => false,
+		'exclude_from_search' => true,
+		'has_archive'         => false,
+		'rewrite'             => false,
+		'supports'            => array( 'title' ),
+		'show_in_rest'        => false,
+	) );
+
+	register_post_type( 'log_order', array(
+		'labels'              => harbour_pt_labels( 'Log order', 'Log orders' ),
+		'public'              => false,
+		'show_ui'             => true,
+		'show_in_menu'        => 'harbour',
+		'menu_icon'           => 'dashicons-cart',
+		'publicly_queryable'  => false,
+		'exclude_from_search' => true,
+		'has_archive'         => false,
+		'rewrite'             => false,
+		'query_var'           => false,
+		'supports'            => array( 'title' ),
+		'capability_type'     => 'post',
+		'map_meta_cap'        => true,
+		'show_in_rest'        => false,
+	) );
 }
 add_action( 'init', 'harbour_register_post_types' );
 
