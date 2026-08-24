@@ -1,0 +1,15 @@
+.git
+.github
+build
+node_modules
+tests
+.distignore
+.editorconfig
+.gitignore
+phpcs.xml
+phpunit.xml
+composer.json
+composer.lock
+CONTRIBUTING.md
+README.md
+CHANGELOG.md

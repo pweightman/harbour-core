@@ -1,0 +1,45 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+env:
+  SLUG: harbour-core
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+
+      - name: Tag must match the version header
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          HEADER=$(grep -m1 '^ *\* *Version:' harbour-core.php | sed 's/.*Version:[[:space:]]*//' | tr -d '\r')
+          if [ "$TAG" != "$HEADER" ]; then
+            echo "::error::Tag $TAG does not match plugin header version $HEADER"
+            exit 1
+          fi
+
+      - name: Lint
+        run: find . -name '*.php' -not -path './vendor/*' -print0 | xargs -0 -n1 php -l
+
+      - name: Build distribution zip
+        run: |
+          mkdir -p build/$SLUG
+          rsync -a --exclude-from=.distignore ./ build/$SLUG/
+          cd build && zip -qr "../$SLUG.zip" "$SLUG"
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ env.SLUG }}.zip
+          generate_release_notes: true
