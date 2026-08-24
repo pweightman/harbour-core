@@ -85,6 +85,39 @@ function harbour_output_schema(): void {
 		$graph[] = array( '@type' => 'BreadcrumbList', 'itemListElement' => $items );
 	}
 
+
+	// Content-derived schema on singular service/area pages.
+	if ( is_singular( array( 'service', 'area' ) ) ) {
+		$pid = get_queried_object_id();
+
+		$service = array(
+			'@type'    => 'Service',
+			'name'     => get_the_title( $pid ),
+			'provider' => array( '@id' => $biz_id ),
+			'areaServed' => is_singular( 'area' ) ? get_the_title( $pid ) : array( 'Leicestershire', 'Warwickshire', 'Northamptonshire' ),
+			'url'      => get_permalink( $pid ),
+		);
+		$graph[] = $service;
+
+		$faq = get_post_meta( $pid, '_harbour_faq', true );
+		if ( is_array( $faq ) && $faq ) {
+			$items = array();
+			foreach ( $faq as $row ) {
+				if ( empty( $row['q'] ) || empty( $row['a'] ) ) {
+					continue;
+				}
+				$items[] = array(
+					'@type'          => 'Question',
+					'name'           => $row['q'],
+					'acceptedAnswer' => array( '@type' => 'Answer', 'text' => $row['a'] ),
+				);
+			}
+			if ( $items ) {
+				$graph[] = array( '@type' => 'FAQPage', 'mainEntity' => $items );
+			}
+		}
+	}
+
 	$data = array(
 		'@context' => 'https://schema.org',
 		'@graph'   => $graph,

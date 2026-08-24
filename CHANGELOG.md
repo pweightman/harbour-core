@@ -4,6 +4,11 @@ All notable changes to this plugin are documented here. Format: [Keep a Changelo
 
 ## [Unreleased]
 ### Added
+- Hero-heading + repeatable FAQ meta for service/area posts, with editor metaboxes (`admin/content-meta.php`).
+- Service and FAQPage JSON-LD on singular service/area pages (areaServed set to the town on area pages).
+- Content template tags: `harbour_hero_heading()`, `harbour_get_faq()`, `harbour_render_faq()`.
+
+### Added
 - Post types: `service`, `area` (public) and `enquiry` (private, editor-only, never public/searchable), plus shared `service_type` / `service_area` taxonomies.
 - Harbour settings screen (Business + Enquiries tabs), one option array with a single sanitise pass; every NAP fact the templates print now lives here.
 - JSON-LD schema from settings: `LocalBusiness` + `HomeAndConstructionBusiness`, `WebSite`, `BreadcrumbList`. No fabricated ratings. `/thank-you/` set to noindex.
