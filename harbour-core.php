@@ -16,7 +16,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'HARBOUR_CORE_VERSION', '0.1.0' );
+define( 'HARBOUR_CORE_VERSION', '0.2.0' );
 define( 'HARBOUR_CORE_FILE', __FILE__ );
 define( 'HARBOUR_CORE_PATH', plugin_dir_path( __FILE__ ) );
 define( 'HARBOUR_CORE_URL', plugin_dir_url( __FILE__ ) );
