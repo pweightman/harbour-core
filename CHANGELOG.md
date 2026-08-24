@@ -3,6 +3,8 @@
 All notable changes to this plugin are documented here. Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: [SemVer](https://semver.org/).
 
 ## [Unreleased]
+
+## [0.2.0] - 2026-08-24
 ### Changed
 - Coding standards: the whole plugin is now clean against WordPress-Extra (PHPCS), enforced in CI. Nonce checks moved ahead of any `$_POST` read; output escaping, translator comments and short-ternary/style fixes throughout.
 
