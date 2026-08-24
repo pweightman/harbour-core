@@ -37,6 +37,23 @@ function harbour_register_meta(): void {
 			},
 		) );
 	}
+
+	// Hero heading + FAQ for public content types.
+	foreach ( array( 'service', 'area' ) as $pt ) {
+		register_post_meta( $pt, '_harbour_hero_heading', array(
+			'type'              => 'string',
+			'single'            => true,
+			'show_in_rest'      => true,
+			'sanitize_callback' => 'sanitize_text_field',
+			'auth_callback'     => function () { return current_user_can( 'edit_posts' ); },
+		) );
+		register_post_meta( $pt, '_harbour_faq', array(
+			'type'          => 'array',
+			'single'        => true,
+			'show_in_rest'  => false,
+			'auth_callback' => function () { return current_user_can( 'edit_posts' ); },
+		) );
+	}
 	unset( $text );
 }
 add_action( 'init', 'harbour_register_meta' );
