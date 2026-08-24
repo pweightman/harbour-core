@@ -37,3 +37,10 @@ function harbour_core_updates(): void {
 	$updater->getVcsApi()->enableReleaseAssets( '/harbour-core\.zip$/i' );
 }
 add_action( 'init', 'harbour_core_updates' );
+
+require_once HARBOUR_CORE_PATH . 'includes/class-plugin.php';
+
+register_activation_hook( HARBOUR_CORE_FILE, array( 'Harbour_Core', 'activate' ) );
+register_deactivation_hook( HARBOUR_CORE_FILE, array( 'Harbour_Core', 'deactivate' ) );
+
+Harbour_Core::boot();

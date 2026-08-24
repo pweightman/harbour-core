@@ -13,3 +13,6 @@ composer.lock
 CONTRIBUTING.md
 README.md
 CHANGELOG.md
+phpunit.xml.dist
+phpunit.phar
+.phpunit.result.cache
