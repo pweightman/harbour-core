@@ -4,6 +4,10 @@ All notable changes to this plugin are documented here. Format: [Keep a Changelo
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-08-24
+### Changed
+- Proved the self-update pipeline end to end: release detection from GitHub Releases.
+
 ## [0.1.0] - 2026-08-24
 ### Added
 - Initial plugin skeleton: header, guards, version constants.

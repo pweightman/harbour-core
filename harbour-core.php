@@ -3,7 +3,7 @@
  * Plugin Name:       Harbour Core
  * Plugin URI:        https://github.com/pweightman/harbour-core
  * Description:       Post types, enquiries, firewood orders, reviews, job gallery and schema for Harbour Tree Care. Survives any theme change.
- * Version:           0.1.0
+ * Version:           0.1.1
  * Requires at least: 6.5
  * Requires PHP:      8.1
  * Author:            Patrick Weightman
