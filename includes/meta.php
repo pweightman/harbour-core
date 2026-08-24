@@ -54,6 +54,24 @@ function harbour_register_meta(): void {
 			'auth_callback' => function () { return current_user_can( 'edit_posts' ); },
 		) );
 	}
+
+	// Review (testimonial) fields.
+	foreach ( array( '_harbour_quote', '_harbour_reviewer', '_harbour_town', '_harbour_source', '_harbour_rating', '_harbour_review_date' ) as $key ) {
+		register_post_meta( 'testimonial', $key, array(
+			'type'          => 'string',
+			'single'        => true,
+			'show_in_rest'  => false,
+			'auth_callback' => function () { return current_user_can( 'edit_posts' ); },
+		) );
+	}
+	register_post_meta( 'testimonial', '_harbour_featured', array( 'type' => 'boolean', 'single' => true, 'show_in_rest' => false, 'auth_callback' => function () { return current_user_can( 'edit_posts' ); } ) );
+
+	// Job (gallery) fields.
+	foreach ( array( '_harbour_before', '_harbour_after' ) as $key ) {
+		register_post_meta( 'job', $key, array( 'type' => 'integer', 'single' => true, 'show_in_rest' => true, 'auth_callback' => function () { return current_user_can( 'edit_posts' ); } ) );
+	}
+	register_post_meta( 'job', '_harbour_featured', array( 'type' => 'boolean', 'single' => true, 'show_in_rest' => true, 'auth_callback' => function () { return current_user_can( 'edit_posts' ); } ) );
+
 	unset( $text );
 }
 add_action( 'init', 'harbour_register_meta' );
