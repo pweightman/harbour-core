@@ -33,6 +33,8 @@ function harbour_setup_page(): void {
 		} elseif ( 'settings' === $action ) {
 			harbour_setup_seed_settings();
 			$done = __( 'Starter settings loaded. Now confirm every value on the Settings screen.', 'harbour-core' );
+		} elseif ( 'content' === $action ) {
+			$done = harbour_setup_refresh_content();
 		} elseif ( 'frontpage' === $action ) {
 			$home = get_posts(
 				array(
@@ -67,6 +69,7 @@ function harbour_setup_page(): void {
 		echo '<button class="button button-primary">' . esc_html( $label ) . '</button>';
 		echo '</form>';
 	};
+	$button( 'content', __( 'Load / refresh site content', 'harbour-core' ), __( 'Create or update the service and area pages, plus the Prices and Emergency pages, from the shipped copy. Matches existing pages by slug (no duplicates). Note: this overwrites those pages with the latest shipped copy, so re-run it only when you want that.', 'harbour-core' ) );
 	$button( 'menus', __( 'Build navigation menus', 'harbour-core' ), __( 'Create the primary and footer menus (Services and Areas with their sub-items) and assign them to their locations. Rebuilds them if they already exist.', 'harbour-core' ) );
 	$button( 'settings', __( 'Load starter settings', 'harbour-core' ), __( 'Fill the Business, Enquiries and Firewood settings with starter values. Confirm and correct them all afterwards — especially firewood prices.', 'harbour-core' ) );
 	$button( 'frontpage', __( 'Set the front page', 'harbour-core' ), __( 'Set the site to show the “Home” page as the front page (import content first).', 'harbour-core' ) );
@@ -144,9 +147,21 @@ function harbour_setup_build_menus(): void {
 				'parent' => 'services',
 			),
 			array(
+				'title'  => 'Hedge cutting',
+				'url'    => "$b/services/hedge-cutting/",
+				'desc'   => 'Trimmed, reduced and reshaped',
+				'parent' => 'services',
+			),
+			array(
 				'title'  => 'Seasoned firewood',
 				'url'    => "$b/services/seasoned-firewood/",
 				'desc'   => 'Ready to burn, locally delivered',
+				'parent' => 'services',
+			),
+			array(
+				'title'  => 'Prices',
+				'url'    => "$b/tree-surgery-prices/",
+				'desc'   => 'How we price the work',
 				'parent' => 'services',
 			),
 			'areas'    => array(
@@ -179,9 +194,18 @@ function harbour_setup_build_menus(): void {
 				'parent' => 'areas',
 			),
 			array(
+				'title'  => 'Nuneaton & Bedworth',
+				'url'    => "$b/areas/tree-surgeons-nuneaton/",
+				'parent' => 'areas',
+			),
+			array(
 				'title'  => 'All areas covered',
 				'url'    => "$b/areas/",
 				'parent' => 'areas',
+			),
+			array(
+				'title' => 'Emergency',
+				'url'   => "$b/emergency-tree-surgeon-leicestershire/",
 			),
 			array(
 				'title' => 'About',
@@ -218,6 +242,10 @@ function harbour_setup_build_menus(): void {
 				'url'   => "$b/services/tree-surveys-reports/",
 			),
 			array(
+				'title' => 'Hedge cutting',
+				'url'   => "$b/services/hedge-cutting/",
+			),
+			array(
 				'title' => 'Seasoned firewood',
 				'url'   => "$b/services/seasoned-firewood/",
 			),
@@ -246,6 +274,10 @@ function harbour_setup_build_menus(): void {
 			array(
 				'title' => 'Market Harborough',
 				'url'   => "$b/areas/tree-surgeons-market-harborough/",
+			),
+			array(
+				'title' => 'Nuneaton & Bedworth',
+				'url'   => "$b/areas/tree-surgeons-nuneaton/",
 			),
 			array(
 				'title' => 'See all areas',
@@ -320,4 +352,112 @@ function harbour_setup_seed_settings(): void {
 		);
 	}
 	update_option( HARBOUR_OPTION, $s );
+}
+
+/**
+ * Upsert services/areas from the bundled JSON, and ensure the standalone pages
+ * (home, about, contact, order-logs, thank-you, prices, emergency, legal) exist.
+ * Matched by slug, so it updates rather than duplicates.
+ *
+ * @return string Result message.
+ */
+function harbour_setup_refresh_content(): string {
+	$file = HARBOUR_CORE_PATH . 'includes/content/content-data.json';
+	if ( ! file_exists( $file ) ) {
+		return __( 'Content file missing from the plugin.', 'harbour-core' );
+	}
+	$items = json_decode( (string) file_get_contents( $file ), true ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- reading a bundled local file, not a URL.
+	if ( ! is_array( $items ) ) {
+		return __( 'Content file could not be read.', 'harbour-core' );
+	}
+
+	$n = 0;
+	foreach ( $items as $it ) {
+		$type     = in_array( $it['type'], array( 'service', 'area' ), true ) ? $it['type'] : 'service';
+		$existing = get_posts(
+			array(
+				'post_type'   => $type,
+				'name'        => $it['slug'],
+				'post_status' => 'any',
+				'numberposts' => 1,
+			)
+		);
+		$data     = array(
+			'post_type'    => $type,
+			'post_status'  => 'publish',
+			'post_title'   => $it['title'],
+			'post_name'    => $it['slug'],
+			'post_excerpt' => $it['excerpt'],
+			'post_content' => $it['content'],
+			'menu_order'   => (int) $it['menu_order'],
+		);
+		if ( $existing ) {
+			$data['ID'] = $existing[0]->ID;
+		}
+		$id = wp_insert_post( $data );
+		if ( $id && ! is_wp_error( $id ) ) {
+			update_post_meta( $id, '_harbour_hero_heading', $it['hero'] );
+			update_post_meta( $id, '_harbour_seo_title', $it['seo_title'] );
+			update_post_meta( $id, '_harbour_seo_desc', $it['seo_desc'] );
+			$faq = array();
+			foreach ( (array) $it['faq'] as $row ) {
+				if ( ! empty( $row['q'] ) && ! empty( $row['a'] ) ) {
+					$faq[] = array(
+						'q' => sanitize_text_field( $row['q'] ),
+						'a' => sanitize_textarea_field( $row['a'] ),
+					);
+				}
+			}
+			update_post_meta( $id, '_harbour_faq', $faq );
+			++$n;
+		}
+	}
+
+	// Ensure the standalone pages exist (templates provide their copy) and carry
+	// their SEO title/description.
+	$pages = array(
+		'home'                                  => array( 'Home', 'Tree Surgeons in Leicestershire | Harbour Tree Care', 'Family-run tree surgeons near Lutterworth and Hinckley since 1977. Pruning, felling, stump grinding and firewood. Free site visits and written quotes.' ),
+		'about'                                 => array( 'About', 'About Harbour Tree Care | Family Tree Surgeons since 1977', 'Harbour Tree Care was started by Roy Harbour in 1977 and is run today by his son Neil, from the same yard at Ashby Magna near Lutterworth.' ),
+		'contact'                               => array( 'Contact', 'Contact Harbour Tree Care | Free Tree Surgery Quotes', 'Call for a free no-obligation quote, or send a few photos. Tree surgeons at Ashby Magna near Lutterworth, Leicestershire.' ),
+		'order-logs'                            => array( 'Order logs', 'Order Seasoned Firewood | Harbour Tree Care', 'Order seasoned hardwood logs for local delivery around Lutterworth and Hinckley. Pay on delivery.' ),
+		'thank-you'                             => array( 'Thank you', '', '' ),
+		'tree-surgery-prices'                   => array( 'Prices', 'Tree Surgery Prices in Leicestershire | Harbour Tree Care', 'Honest guide prices for tree work in Leicestershire — pruning, felling, stump grinding and firewood — so you know where you stand. Free fixed quotes.' ),
+		'emergency-tree-surgeon-leicestershire' => array( 'Emergency tree surgeon', 'Emergency Tree Surgeon Leicestershire | Harbour Tree Care', 'Storm-damaged or fallen tree in Leicestershire? Emergency tree removal near Lutterworth and Hinckley. Family firm since 1977.' ),
+		'privacy'                               => array( 'Privacy', '', '' ),
+		'terms'                                 => array( 'Terms', '', '' ),
+		'accessibility'                         => array( 'Accessibility', '', '' ),
+	);
+	foreach ( $pages as $slug => $info ) {
+		list( $title, $seo_t, $seo_d ) = $info;
+		$existing                      = get_posts(
+			array(
+				'post_type'   => 'page',
+				'name'        => $slug,
+				'post_status' => 'any',
+				'numberposts' => 1,
+			)
+		);
+		$page_id                       = $existing ? $existing[0]->ID : wp_insert_post(
+			array(
+				'post_type'   => 'page',
+				'post_status' => 'publish',
+				'post_title'  => $title,
+				'post_name'   => $slug,
+			)
+		);
+		if ( $page_id && ! is_wp_error( $page_id ) ) {
+			if ( $seo_t ) {
+				update_post_meta( $page_id, '_harbour_seo_title', $seo_t );
+			}
+			if ( $seo_d ) {
+				update_post_meta( $page_id, '_harbour_seo_desc', $seo_d );
+			}
+		}
+	}
+
+	return sprintf(
+		/* translators: %d: number of service/area pages updated. */
+		__( '%d service and area pages loaded/updated, and the standalone pages checked. Confirm the placeholders (prices, hedge cutting, surveys) before relying on them publicly.', 'harbour-core' ),
+		$n
+	);
 }

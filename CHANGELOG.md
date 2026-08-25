@@ -4,6 +4,15 @@ All notable changes to this plugin are documented here. Format: [Keep a Changelo
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-08-25
+### Added
+- New service: Hedge cutting. Bundled default content for all services and areas (`includes/content/content-data.json`).
+- Setup tool "Load / refresh site content" — upserts services/areas and the standalone pages by slug from the bundled copy (no duplicates), for wp-admin-only hosts.
+- Per-page SEO title + meta description fields (`_harbour_seo_*`), output in the head; archive SEO for the service/area hubs.
+### Changed
+- Refreshed service and area copy to the revised SEO-optimised prototype; internal "confirm before publishing" notes stripped from shipped copy.
+- Navigation updated: Hedge cutting + Prices under Services, Emergency top-level, Nuneaton & Bedworth.
+
 ## [0.2.1] - 2026-08-25
 ### Added
 - "Harbour → Setup" one-click tool (for hosts without wp-cli): build the navigation menus, load starter settings, and set the front page. Idempotent, nonce- and capability-protected.
