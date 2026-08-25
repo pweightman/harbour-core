@@ -36,6 +36,7 @@ final class Harbour_Core {
 			require_once HARBOUR_CORE_PATH . 'admin/log-orders-admin.php';
 			require_once HARBOUR_CORE_PATH . 'admin/reviews-admin.php';
 			require_once HARBOUR_CORE_PATH . 'admin/gallery-admin.php';
+			require_once HARBOUR_CORE_PATH . 'includes/setup-tool.php';
 		}
 	}
 

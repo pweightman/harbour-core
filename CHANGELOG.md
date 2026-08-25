@@ -4,6 +4,10 @@ All notable changes to this plugin are documented here. Format: [Keep a Changelo
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-08-25
+### Added
+- "Harbour → Setup" one-click tool (for hosts without wp-cli): build the navigation menus, load starter settings, and set the front page. Idempotent, nonce- and capability-protected.
+
 ## [0.2.0] - 2026-08-24
 ### Changed
 - Coding standards: the whole plugin is now clean against WordPress-Extra (PHPCS), enforced in CI. Nonce checks moved ahead of any `$_POST` read; output escaping, translator comments and short-ternary/style fixes throughout.
