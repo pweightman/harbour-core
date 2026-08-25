@@ -4,6 +4,10 @@ All notable changes to this plugin are documented here. Format: [Keep a Changelo
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-08-25
+### Changed
+- Hold Hedge cutting (service kept as draft) and Prices (page kept as draft) until confirmed — both removed from the navigation. Emergency stays live. The refresh action now honours a per-item status so held pages stay held.
+
 ## [0.3.0] - 2026-08-25
 ### Added
 - New service: Hedge cutting. Bundled default content for all services and areas (`includes/content/content-data.json`).

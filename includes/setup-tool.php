@@ -147,21 +147,9 @@ function harbour_setup_build_menus(): void {
 				'parent' => 'services',
 			),
 			array(
-				'title'  => 'Hedge cutting',
-				'url'    => "$b/services/hedge-cutting/",
-				'desc'   => 'Trimmed, reduced and reshaped',
-				'parent' => 'services',
-			),
-			array(
 				'title'  => 'Seasoned firewood',
 				'url'    => "$b/services/seasoned-firewood/",
 				'desc'   => 'Ready to burn, locally delivered',
-				'parent' => 'services',
-			),
-			array(
-				'title'  => 'Prices',
-				'url'    => "$b/tree-surgery-prices/",
-				'desc'   => 'How we price the work',
 				'parent' => 'services',
 			),
 			'areas'    => array(
@@ -240,10 +228,6 @@ function harbour_setup_build_menus(): void {
 			array(
 				'title' => 'Surveys & reports',
 				'url'   => "$b/services/tree-surveys-reports/",
-			),
-			array(
-				'title' => 'Hedge cutting',
-				'url'   => "$b/services/hedge-cutting/",
 			),
 			array(
 				'title' => 'Seasoned firewood',
@@ -384,7 +368,7 @@ function harbour_setup_refresh_content(): string {
 		);
 		$data     = array(
 			'post_type'    => $type,
-			'post_status'  => 'publish',
+			'post_status'  => isset( $it['status'] ) ? $it['status'] : 'publish',
 			'post_title'   => $it['title'],
 			'post_name'    => $it['slug'],
 			'post_excerpt' => $it['excerpt'],
@@ -421,15 +405,18 @@ function harbour_setup_refresh_content(): string {
 		'contact'                               => array( 'Contact', 'Contact Harbour Tree Care | Free Tree Surgery Quotes', 'Call for a free no-obligation quote, or send a few photos. Tree surgeons at Ashby Magna near Lutterworth, Leicestershire.' ),
 		'order-logs'                            => array( 'Order logs', 'Order Seasoned Firewood | Harbour Tree Care', 'Order seasoned hardwood logs for local delivery around Lutterworth and Hinckley. Pay on delivery.' ),
 		'thank-you'                             => array( 'Thank you', '', '' ),
-		'tree-surgery-prices'                   => array( 'Prices', 'Tree Surgery Prices in Leicestershire | Harbour Tree Care', 'Honest guide prices for tree work in Leicestershire — pruning, felling, stump grinding and firewood — so you know where you stand. Free fixed quotes.' ),
+		'tree-surgery-prices'                   => array( 'Prices', 'Tree Surgery Prices in Leicestershire | Harbour Tree Care', 'Honest guide prices for tree work in Leicestershire — pruning, felling, stump grinding and firewood — so you know where you stand. Free fixed quotes.', 'draft' ),
 		'emergency-tree-surgeon-leicestershire' => array( 'Emergency tree surgeon', 'Emergency Tree Surgeon Leicestershire | Harbour Tree Care', 'Storm-damaged or fallen tree in Leicestershire? Emergency tree removal near Lutterworth and Hinckley. Family firm since 1977.' ),
 		'privacy'                               => array( 'Privacy', '', '' ),
 		'terms'                                 => array( 'Terms', '', '' ),
 		'accessibility'                         => array( 'Accessibility', '', '' ),
 	);
 	foreach ( $pages as $slug => $info ) {
-		list( $title, $seo_t, $seo_d ) = $info;
-		$existing                      = get_posts(
+		$title    = $info[0];
+		$seo_t    = $info[1];
+		$seo_d    = $info[2];
+		$status   = isset( $info[3] ) ? $info[3] : 'publish';
+		$existing = get_posts(
 			array(
 				'post_type'   => 'page',
 				'name'        => $slug,
@@ -437,14 +424,24 @@ function harbour_setup_refresh_content(): string {
 				'numberposts' => 1,
 			)
 		);
-		$page_id                       = $existing ? $existing[0]->ID : wp_insert_post(
-			array(
-				'post_type'   => 'page',
-				'post_status' => 'publish',
-				'post_title'  => $title,
-				'post_name'   => $slug,
-			)
-		);
+		if ( $existing ) {
+			$page_id = $existing[0]->ID;
+			wp_update_post(
+				array(
+					'ID'          => $page_id,
+					'post_status' => $status,
+				)
+			);
+		} else {
+			$page_id = wp_insert_post(
+				array(
+					'post_type'   => 'page',
+					'post_status' => $status,
+					'post_title'  => $title,
+					'post_name'   => $slug,
+				)
+			);
+		}
 		if ( $page_id && ! is_wp_error( $page_id ) ) {
 			if ( $seo_t ) {
 				update_post_meta( $page_id, '_harbour_seo_title', $seo_t );
