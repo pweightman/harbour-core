@@ -133,6 +133,24 @@ function harbour_register_meta(): void {
 		)
 	);
 
+	// SEO title + meta description for public content.
+	foreach ( array( 'service', 'area', 'page' ) as $pt ) {
+		foreach ( array( '_harbour_seo_title', '_harbour_seo_desc' ) as $key ) {
+			register_post_meta(
+				$pt,
+				$key,
+				array(
+					'type'              => 'string',
+					'single'            => true,
+					'show_in_rest'      => true,
+					'sanitize_callback' => 'sanitize_text_field',
+					'auth_callback'     => function () {
+						return current_user_can( 'edit_posts' ); },
+				)
+			);
+		}
+	}
+
 	unset( $text );
 }
 add_action( 'init', 'harbour_register_meta' );

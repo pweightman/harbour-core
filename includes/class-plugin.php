@@ -23,6 +23,7 @@ final class Harbour_Core {
 		require_once $inc . 'taxonomies.php';
 		require_once $inc . 'meta.php';
 		require_once $inc . 'schema.php';
+		require_once $inc . 'seo.php';
 		require_once $inc . 'content-tags.php';
 		require_once $inc . 'geo.php';
 		require_once $inc . 'modules/enquiries.php';
