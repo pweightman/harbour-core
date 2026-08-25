@@ -4,6 +4,13 @@ All notable changes to this plugin are documented here. Format: [Keep a Changelo
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-08-25
+### Added
+- `/llms.txt` — a plain-text guide for AI assistants (per llmstxt.org), generated from business settings and published services/areas/pages so it stays in sync; held/draft pages are excluded automatically. Rewrite rules auto-flush after a plugin update.
+
+### Note
+- The XML sitemap is provided by WordPress core at `/wp-sitemap.xml` (already linked from robots.txt); no change needed.
+
 ## [0.4.0] - 2026-08-25
 ### Added
 - Enquiry notification email now embeds the uploaded photos inline (CID) and lists every detail with clickable phone/email, so whoever quotes has the complete enquiry in the email and never needs to log in. Uses the resized "large" image to keep the message small; Reply-To is the customer.
