@@ -232,3 +232,44 @@ add_action(
 		exit;
 	}
 );
+
+/* -------- Keep enquiry photos out of the Media Library -------- */
+
+/**
+ * Exclude enquiry-upload attachments from the Media Library grid (modal).
+ *
+ * @param array $args Query args.
+ * @return array
+ */
+function harbour_hide_enquiry_media_ajax( $args ) {
+	$meta               = isset( $args['meta_query'] ) && is_array( $args['meta_query'] ) ? $args['meta_query'] : array();
+	$meta[]             = array(
+		'key'     => '_harbour_enquiry_photo',
+		'compare' => 'NOT EXISTS',
+	);
+	$args['meta_query'] = $meta; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+	return $args;
+}
+add_filter( 'ajax_query_attachments_args', 'harbour_hide_enquiry_media_ajax' );
+
+/**
+ * Exclude enquiry-upload attachments from the Media Library list view.
+ *
+ * @param WP_Query $query Query.
+ */
+function harbour_hide_enquiry_media_list( $query ) {
+	if ( ! is_admin() || ! $query->is_main_query() ) {
+		return;
+	}
+	global $pagenow;
+	if ( 'upload.php' !== $pagenow ) {
+		return;
+	}
+	$meta   = (array) $query->get( 'meta_query' );
+	$meta[] = array(
+		'key'     => '_harbour_enquiry_photo',
+		'compare' => 'NOT EXISTS',
+	);
+	$query->set( 'meta_query', $meta ); // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+}
+add_action( 'pre_get_posts', 'harbour_hide_enquiry_media_list' );

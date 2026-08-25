@@ -395,24 +395,56 @@ function harbour_notify_enquiry( int $post_id, array $data, array $atts ): void 
 		$to = array( get_option( 'admin_email' ) );
 	}
 
-	$edit = admin_url( 'post.php?post=' . $post_id . '&action=edit' );
-	$rows = array(
-		__( 'Name', 'harbour-core' )     => $data['name'],
-		__( 'Phone', 'harbour-core' )    => $data['phone'],
-		__( 'Email', 'harbour-core' )    => $data['email'],
-		__( 'Postcode', 'harbour-core' ) => $data['postcode'],
-		__( 'Service', 'harbour-core' )  => $data['service'],
-		__( 'Message', 'harbour-core' )  => $data['message'],
-		__( 'Photos', 'harbour-core' )   => count( $atts ),
+	$tel_href = 'tel:' . preg_replace( '/\s+/', '', $data['phone'] );
+	$edit     = admin_url( 'post.php?post=' . $post_id . '&action=edit' );
+	$rows     = array(
+		__( 'Name', 'harbour-core' )     => esc_html( $data['name'] ),
+		__( 'Phone', 'harbour-core' )    => '<a href="' . esc_url( $tel_href ) . '">' . esc_html( $data['phone'] ) . '</a>',
+		__( 'Email', 'harbour-core' )    => '<a href="mailto:' . esc_attr( $data['email'] ) . '">' . esc_html( $data['email'] ) . '</a>',
+		__( 'Postcode', 'harbour-core' ) => esc_html( $data['postcode'] ),
+		__( 'Service', 'harbour-core' )  => esc_html( $data['service'] ),
+		__( 'Message', 'harbour-core' )  => nl2br( esc_html( $data['message'] ) ),
 	);
-	$body = '<p><strong>' . esc_html__( 'New quote enquiry from the website.', 'harbour-core' ) . '</strong></p><table cellpadding="6" style="border-collapse:collapse">';
+	$body     = '<p><strong>' . esc_html__( 'New quote enquiry from the website.', 'harbour-core' ) . '</strong></p><table cellpadding="6" style="border-collapse:collapse">';
 	foreach ( $rows as $label => $value ) {
-		$body .= '<tr><td style="border:1px solid #DEE4EC;font-weight:bold">' . esc_html( $label ) . '</td><td style="border:1px solid #DEE4EC">' . nl2br( esc_html( (string) $value ) ) . '</td></tr>';
+		$body .= '<tr><td style="border:1px solid #DEE4EC;font-weight:bold">' . esc_html( $label ) . '</td><td style="border:1px solid #DEE4EC">' . $value . '</td></tr>';
 	}
-	$body .= '</table><p><a href="' . esc_url( $edit ) . '">' . esc_html__( 'Open this enquiry in admin', 'harbour-core' ) . '</a></p>';
+	$body .= '</table>';
+
+	// Embed the uploaded photos inline, so whoever quotes has everything in the
+	// email itself and never needs to log in. We embed the resized 'large'
+	// version to keep the message a sensible size.
+	$inline = array();
+	foreach ( $atts as $i => $att_id ) {
+		$path = harbour_email_image_path( (int) $att_id );
+		if ( $path ) {
+			$cid      = 'harbourphoto' . $i;
+			$inline[] = array(
+				'path' => $path,
+				'cid'  => $cid,
+				'name' => basename( $path ),
+			);
+		}
+	}
+	if ( $inline ) {
+		$body .= '<p style="font-weight:bold;margin-top:20px">' . esc_html( sprintf( /* translators: %d: number of photos. */ _n( '%d photo attached:', '%d photos attached:', count( $inline ), 'harbour-core' ), count( $inline ) ) ) . '</p>';
+		foreach ( $inline as $img ) {
+			$body .= '<div style="margin:0 0 12px"><img src="cid:' . esc_attr( $img['cid'] ) . '" alt="" style="max-width:520px;width:100%;height:auto;border:1px solid #DEE4EC;border-radius:6px"></div>';
+		}
+	}
+
+	$body .= '<p style="margin-top:16px"><a href="' . esc_url( $edit ) . '">' . esc_html__( 'Open this enquiry in admin (optional)', 'harbour-core' ) . '</a></p>';
+
+	// Make the images available to phpmailer_init for inline embedding, scoped
+	// to this one send.
+	$GLOBALS['harbour_inline_images'] = $inline;
+	add_action( 'phpmailer_init', 'harbour_embed_inline_images' );
 
 	$reply = array( 'Reply-To: ' . $data['name'] . ' <' . $data['email'] . '>' );
 	$sent  = harbour_mail( $to, __( 'New enquiry — ', 'harbour-core' ) . $data['postcode'], $body, $reply );
+
+	// Clear so later mails (e.g. the customer acknowledgement) don't embed them.
+	$GLOBALS['harbour_inline_images'] = array();
 
 	if ( ! $sent ) {
 		update_post_meta( $post_id, '_harbour_mail_failed', current_time( 'mysql' ) );
@@ -423,4 +455,47 @@ function harbour_notify_enquiry( int $post_id, array $data, array $atts ): void 
 	$ack_subject = harbour_setting( 'enquiries', 'ack_subject', __( 'Thanks — we have your enquiry', 'harbour-core' ) );
 	$ack_body    = harbour_setting( 'enquiries', 'ack_body', __( "Thanks for getting in touch. We've received your enquiry and will usually reply the same working day. If it's urgent, please call the yard.", 'harbour-core' ) );
 	harbour_mail( $data['email'], $ack_subject, '<p>' . nl2br( esc_html( $ack_body ) ) . '</p>' );
+}
+
+/**
+ * Best file path to embed in an email for an image attachment: the resized
+ * 'large' version if it exists (keeps the email small), else the full file.
+ *
+ * @param int $att_id Attachment ID.
+ * @return string Absolute path, or '' if unavailable.
+ */
+function harbour_email_image_path( int $att_id ): string {
+	$full = get_attached_file( $att_id );
+	if ( ! $full || ! file_exists( $full ) ) {
+		return '';
+	}
+	$meta = wp_get_attachment_metadata( $att_id );
+	if ( is_array( $meta ) && ! empty( $meta['sizes']['large']['file'] ) ) {
+		$large = trailingslashit( dirname( $full ) ) . $meta['sizes']['large']['file'];
+		if ( file_exists( $large ) ) {
+			return $large;
+		}
+	}
+	return $full;
+}
+
+/**
+ * Embed the queued images into the outgoing message as inline (CID) parts.
+ *
+ * @param PHPMailer\PHPMailer\PHPMailer $phpmailer Mailer instance (by reference).
+ */
+function harbour_embed_inline_images( $phpmailer ): void {
+	$images = $GLOBALS['harbour_inline_images'] ?? array();
+	if ( empty( $images ) || ! is_array( $images ) ) {
+		return;
+	}
+	foreach ( $images as $img ) {
+		if ( ! empty( $img['path'] ) && file_exists( $img['path'] ) ) {
+			try {
+				$phpmailer->addEmbeddedImage( $img['path'], $img['cid'], (string) $img['name'] );
+			} catch ( \Exception $e ) {
+				continue;
+			}
+		}
+	}
 }

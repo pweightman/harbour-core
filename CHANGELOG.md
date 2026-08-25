@@ -4,6 +4,12 @@ All notable changes to this plugin are documented here. Format: [Keep a Changelo
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-08-25
+### Added
+- Enquiry notification email now embeds the uploaded photos inline (CID) and lists every detail with clickable phone/email, so whoever quotes has the complete enquiry in the email and never needs to log in. Uses the resized "large" image to keep the message small; Reply-To is the customer.
+### Changed
+- Customer enquiry photos are hidden from the Media Library (grid + list) — kept with the enquiry record and the email, but out of the way since they're not reused elsewhere.
+
 ## [0.3.1] - 2026-08-25
 ### Changed
 - Hold Hedge cutting (service kept as draft) and Prices (page kept as draft) until confirmed — both removed from the navigation. Emergency stays live. The refresh action now honours a per-item status so held pages stay held.
