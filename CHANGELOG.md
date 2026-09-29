@@ -4,6 +4,10 @@ All notable changes to this plugin are documented here. Format: [Keep a Changelo
 
 ## [Unreleased]
 
+## [0.6.2] - 2026-09-29
+### Fixed
+- Opening hours: a literal `<br>` typed or pasted into the Hours setting was escaped and shown as visible text (e.g. a stray `<br><br>` on the contact page). The field now treats any `<br>` variant as a line break and collapses blank lines, so only clean single breaks are stored. Re-save the Hours field once after updating to normalise an existing value.
+
 ## [0.6.1] - 2026-09-29
 ### Fixed
 - Update checks failed with GitHub API HTTP 403 on shared hosting (the unauthenticated 60-requests/hour-per-IP limit). The update checker now uses an optional GitHub token when the `HARBOUR_GITHUB_TOKEN` constant is defined in `wp-config.php`, raising the limit to 5,000/hour. Without the constant, behaviour is unchanged.

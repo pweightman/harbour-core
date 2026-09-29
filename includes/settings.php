@@ -42,9 +42,29 @@ function harbour_register_settings(): void {
 add_action( 'admin_init', 'harbour_register_settings' );
 
 /**
- * Merge the submitted tab over the stored option and sanitise every field.
+ * Sanitise the opening-hours field into safe, single-break HTML.
  *
- * @param mixed $input Raw submitted array.
+ * Accepts either one line per row (as the field label asks) or literal <br>
+ * tags a user may have typed or pasted. Any <br> variant and any run of blank
+ * lines collapse to a single line break, so a stray "<br><br>" can never be
+ * escaped and shown as visible text on the page.
+ *
+ * @param string $value Raw submitted value.
+ * @return string Escaped text with <br /> line breaks only.
+ */
+function harbour_sanitize_hours( $value ): string {
+	$raw = trim( wp_unslash( (string) $value ) );
+	// Treat any literal <br> the user typed as a real line break.
+	$raw = preg_replace( '#\s*<br\s*/?>\s*#i', "\n", $raw );
+	// Collapse runs of blank lines to a single break.
+	$raw = preg_replace( "/(\r\n|\r|\n){2,}/", "\n", $raw );
+	return nl2br( esc_html( trim( $raw ) ), false );
+}
+
+/**
+ * Sanitise the full settings payload before it is stored.
+ *
+ * @param mixed $input Raw settings input.
  * @return array
  */
 function harbour_sanitize_settings( $input ): array {
@@ -67,7 +87,7 @@ function harbour_sanitize_settings( $input ): array {
 			'addr_county'   => sanitize_text_field( $b['addr_county'] ?? '' ),
 			'addr_post'     => sanitize_text_field( $b['addr_post'] ?? '' ),
 			'yard_postcode' => strtoupper( sanitize_text_field( $b['yard_postcode'] ?? '' ) ),
-			'hours'         => nl2br( esc_html( trim( wp_unslash( $b['hours'] ?? '' ) ) ), false ),
+			'hours'         => harbour_sanitize_hours( $b['hours'] ?? '' ),
 			'facebook'      => esc_url_raw( $b['facebook'] ?? '' ),
 			'instagram'     => esc_url_raw( $b['instagram'] ?? '' ),
 		);
