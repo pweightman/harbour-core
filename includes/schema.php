@@ -83,7 +83,7 @@ function harbour_output_schema(): void {
 
 	// Breadcrumbs (Home → current) on non-front pages.
 	if ( ! is_front_page() ) {
-		$items   = array(
+		$items = array(
 			array(
 				'@type'    => 'ListItem',
 				'position' => 1,
@@ -91,13 +91,34 @@ function harbour_output_schema(): void {
 				'item'     => home_url( '/' ),
 			),
 		);
-		$title   = wp_get_document_title();
-		$items[] = array(
-			'@type'    => 'ListItem',
-			'position' => 2,
-			'name'     => wp_strip_all_tags( $title ),
-			'item'     => home_url( add_query_arg( array(), $GLOBALS['wp']->request ?? '' ) ),
-		);
+		$pos   = 2;
+
+		// Insert the Advice level for blog posts.
+		if ( is_singular( 'post' ) ) {
+			$blog_id = (int) get_option( 'page_for_posts' );
+			if ( $blog_id ) {
+				$items[] = array(
+					'@type'    => 'ListItem',
+					'position' => $pos++,
+					'name'     => get_the_title( $blog_id ),
+					'item'     => get_permalink( $blog_id ),
+				);
+			}
+			$items[] = array(
+				'@type'    => 'ListItem',
+				'position' => $pos,
+				'name'     => wp_strip_all_tags( get_the_title( get_queried_object_id() ) ),
+				'item'     => get_permalink( get_queried_object_id() ),
+			);
+		} else {
+			$title   = wp_get_document_title();
+			$items[] = array(
+				'@type'    => 'ListItem',
+				'position' => $pos,
+				'name'     => wp_strip_all_tags( $title ),
+				'item'     => home_url( add_query_arg( array(), $GLOBALS['wp']->request ?? '' ) ),
+			);
+		}
 		$graph[] = array(
 			'@type'           => 'BreadcrumbList',
 			'itemListElement' => $items,
@@ -142,6 +163,32 @@ function harbour_output_schema(): void {
 		}
 	}
 
+	// BlogPosting for single advice articles.
+	if ( is_singular( 'post' ) ) {
+		$pid     = get_queried_object_id();
+		$post    = array(
+			'@type'            => 'BlogPosting',
+			'headline'         => wp_strip_all_tags( get_the_title( $pid ) ),
+			'datePublished'    => get_the_date( 'c', $pid ),
+			'dateModified'     => get_the_modified_date( 'c', $pid ),
+			'author'           => array( '@id' => $biz_id ),
+			'publisher'        => array( '@id' => $biz_id ),
+			'mainEntityOfPage' => array(
+				'@type' => 'WebPage',
+				'@id'   => get_permalink( $pid ),
+			),
+		);
+		$excerpt = has_excerpt( $pid ) ? get_the_excerpt( $pid ) : '';
+		if ( $excerpt ) {
+			$post['description'] = wp_strip_all_tags( $excerpt );
+		}
+		$img = get_the_post_thumbnail_url( $pid, 'large' );
+		if ( $img ) {
+			$post['image'] = $img;
+		}
+		$graph[] = $post;
+	}
+
 	$data = array(
 		'@context' => 'https://schema.org',
 		'@graph'   => $graph,
@@ -158,6 +205,9 @@ add_action( 'wp_head', 'harbour_output_schema', 20 );
  * @return array
  */
 function harbour_robots( array $robots ): array {
+	if ( harbour_rankmath_active() ) {
+		return $robots; // Rank Math owns robots (thank-you noindex migrated to rank_math_robots).
+	}
 	if ( is_page( 'thank-you' ) ) {
 		$robots['noindex']  = true;
 		$robots['nofollow'] = true;

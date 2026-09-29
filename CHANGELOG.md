@@ -4,6 +4,15 @@ All notable changes to this plugin are documented here. Format: [Keep a Changelo
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-09-29
+### Added
+- Rank Math compatibility. When Rank Math is active it owns the `<title>`, meta description, canonical, robots and Open Graph / Twitter output; our own SEO output stands down automatically and falls back cleanly if Rank Math is deactivated.
+- One-off, idempotent migration (on `admin_init`, and via `wp harbour seo-migrate [--dry-run]`): copies `_harbour_seo_title` → `rank_math_title` and `_harbour_seo_desc` → `rank_math_description` for pages, services, areas and jobs, but only where the Rank Math field is empty; sets `rank_math_focus_keyword` from each title's leading phrase; hands the service/area archive SEO to Rank Math's archive title settings and the Advice index SEO to the posts page; preserves the `/thank-you/` noindex as `rank_math_robots`. The old `_harbour_*` meta is kept. A one-time admin notice reports the count.
+- `BlogPosting` JSON-LD for single advice posts (headline, published/modified dates, image, author + publisher = the LocalBusiness `@id`, `mainEntityOfPage`), plus a Home › Advice › Title breadcrumb for posts.
+### Changed
+- Our JSON-LD `@graph` is now the single source of structured data; Rank Math's own JSON-LD is disabled (`rank_math/json_ld`) so there is exactly one LocalBusiness per page.
+- Fallback sitemap (only when Rank Math is inactive): the `service_type` / `service_area` taxonomies and the `/thank-you/` page are dropped from the WordPress core sitemap. When Rank Math is active it provides its own sitemap.
+
 ## [0.5.0] - 2026-08-25
 ### Added
 - `/llms.txt` — a plain-text guide for AI assistants (per llmstxt.org), generated from business settings and published services/areas/pages so it stays in sync; held/draft pages are excluded automatically. Rewrite rules auto-flush after a plugin update.
