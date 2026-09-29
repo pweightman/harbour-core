@@ -3,7 +3,7 @@
  * Plugin Name:       Harbour Core
  * Plugin URI:        https://github.com/pweightman/harbour-core
  * Description:       Post types, enquiries, firewood orders, reviews, job gallery and schema for Harbour Tree Care. Survives any theme change.
- * Version:           0.6.0
+ * Version:           0.6.1
  * Requires at least: 6.5
  * Requires PHP:      8.1
  * Author:            Patrick Weightman
@@ -16,7 +16,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'HARBOUR_CORE_VERSION', '0.6.0' );
+define( 'HARBOUR_CORE_VERSION', '0.6.1' );
 define( 'HARBOUR_CORE_FILE', __FILE__ );
 define( 'HARBOUR_CORE_PATH', plugin_dir_path( __FILE__ ) );
 define( 'HARBOUR_CORE_URL', plugin_dir_url( __FILE__ ) );
@@ -34,6 +34,13 @@ function harbour_core_updates(): void {
 		HARBOUR_CORE_FILE,
 		'harbour-core'
 	);
+	// Optional: authenticate GitHub API calls to avoid the unauthenticated
+	// 60-requests/hour-per-IP limit (which returns HTTP 403 on shared hosting).
+	// Define HARBOUR_GITHUB_TOKEN in wp-config.php with a fine-grained,
+	// read-only "Contents" token to raise the limit to 5,000/hour.
+	if ( defined( 'HARBOUR_GITHUB_TOKEN' ) && HARBOUR_GITHUB_TOKEN ) {
+		$updater->setAuthentication( HARBOUR_GITHUB_TOKEN );
+	}
 	$updater->getVcsApi()->enableReleaseAssets( '/harbour-core\.zip$/i' );
 }
 add_action( 'init', 'harbour_core_updates' );

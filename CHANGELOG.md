@@ -4,6 +4,10 @@ All notable changes to this plugin are documented here. Format: [Keep a Changelo
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-09-29
+### Fixed
+- Update checks failed with GitHub API HTTP 403 on shared hosting (the unauthenticated 60-requests/hour-per-IP limit). The update checker now uses an optional GitHub token when the `HARBOUR_GITHUB_TOKEN` constant is defined in `wp-config.php`, raising the limit to 5,000/hour. Without the constant, behaviour is unchanged.
+
 ## [0.6.0] - 2026-09-29
 ### Added
 - Rank Math compatibility. When Rank Math is active it owns the `<title>`, meta description, canonical, robots and Open Graph / Twitter output; our own SEO output stands down automatically and falls back cleanly if Rank Math is deactivated.
