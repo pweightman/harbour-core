@@ -134,6 +134,13 @@ function harbour_sanitize_settings( $input ): array {
 		);
 	}
 
+	// Privacy.
+	if ( isset( $input['privacy'] ) && is_array( $input['privacy'] ) ) {
+		$existing['privacy'] = array(
+			'consent_enabled' => ! empty( $input['privacy']['consent_enabled'] ) ? 1 : 0,
+		);
+	}
+
 	return $existing;
 }
 
@@ -188,6 +195,7 @@ function harbour_settings_page(): void {
 		'business'     => 'Business',
 		'enquiries'    => 'Enquiries',
 		'firewood'     => 'Firewood',
+		'privacy'      => 'Privacy',
 		'integrations' => 'Integrations',
 	);
 	$active = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'business'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only tab switch on a settings page.
@@ -215,11 +223,14 @@ function harbour_settings_page(): void {
 				case 'firewood':
 					harbour_settings_tab_firewood();
 					break;
+				case 'privacy':
+					harbour_settings_tab_privacy();
+					break;
 				case 'integrations':
 					echo '<p>Transactional email (SMTP / Resend) credentials are defined as constants in <code>wp-config.php</code>, never stored in the database. See the plugin README.</p>';
 					break;
 			}
-			if ( in_array( $active, array( 'business', 'enquiries', 'firewood' ), true ) ) {
+			if ( in_array( $active, array( 'business', 'enquiries', 'firewood', 'privacy' ), true ) ) {
 				submit_button();
 			}
 			?>
@@ -278,6 +289,21 @@ function harbour_settings_tab_enquiries(): void {
 	harbour_field( 'enquiries', 'ack_subject', 'Autoresponder subject' );
 	harbour_field( 'enquiries', 'ack_body', 'Autoresponder message', 'textarea', 'Sent to the customer to acknowledge their enquiry.' );
 	harbour_field( 'enquiries', 'retention_months', 'Retention (months)', 'number', 'How long enquiries are kept before scheduled cleanup.' );
+	echo '</table>';
+}
+
+/**
+ * Privacy tab: cookie consent banner toggle.
+ */
+function harbour_settings_tab_privacy(): void {
+	$enabled = (bool) harbour_setting( 'privacy', 'consent_enabled', '1' );
+	$name    = HARBOUR_OPTION . '[privacy][consent_enabled]';
+	echo '<table class="form-table" role="presentation">';
+	echo '<tr><th scope="row">' . esc_html__( 'Cookie consent', 'harbour-core' ) . '</th><td>';
+	echo '<label><input type="checkbox" name="' . esc_attr( $name ) . '" value="1" ' . checked( $enabled, true, false ) . '> ';
+	echo esc_html__( 'Show a cookie consent banner and enable Google Consent Mode', 'harbour-core' ) . '</label>';
+	echo '<p class="description">' . esc_html__( 'Required for UK law when Google Analytics is active. Analytics cookies are blocked until the visitor accepts; the choice is remembered. Links to your WordPress privacy policy page when one is set.', 'harbour-core' ) . '</p>';
+	echo '</td></tr>';
 	echo '</table>';
 }
 

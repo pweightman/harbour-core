@@ -4,6 +4,10 @@ All notable changes to this plugin are documented here. Format: [Keep a Changelo
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-10-04
+### Added
+- Cookie consent banner with Google Consent Mode v2, for use with Site Kit's GA4. Consent defaults to denied as early as possible in the head (before gtag runs), so Google Analytics stores nothing until the visitor clicks Accept; the choice is remembered and re-applied on later visits. On-brand, accessible, and theme-independent. If the WP Consent API is present its signal is set too. A new **Harbour → Settings → Privacy** tab toggles it on/off (on by default); the banner links to the WordPress privacy policy page when one is set. A "Cookie settings" link (any `.harbour-cookie-settings` element or `#cookie-settings` link), or `harbourManageCookies()`, re-opens it.
+
 ## [0.6.2] - 2026-09-29
 ### Fixed
 - Opening hours: a literal `<br>` typed or pasted into the Hours setting was escaped and shown as visible text (e.g. a stray `<br><br>` on the contact page). The field now treats any `<br>` variant as a line break and collapses blank lines, so only clean single breaks are stored. Re-save the Hours field once after updating to normalise an existing value.
