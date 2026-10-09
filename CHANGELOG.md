@@ -4,9 +4,13 @@ All notable changes to this plugin are documented here. Format: [Keep a Changelo
 
 ## [Unreleased]
 
+## [0.7.2] - 2026-10-09
+### Fixed
+- PHP 8.5: removed a `finfo_close()` call in the enquiry photo-upload validation. `finfo` has been an object (freed by GC) since PHP 8.1 and `finfo_close()` is deprecated in 8.5; it emitted a deprecation notice on every upload. Caught by the new 8.5 CI leg.
+
 ## [0.7.1] - 2026-10-09
 ### Changed
-- Verified PHP 8.5 compatibility (production now runs PHP 8.5): clean lint and 36 passing unit tests under 8.5, and every page type rendered with no deprecations or warnings. No code changes were required.
+- Verified PHP 8.5 compatibility (production now runs PHP 8.5): clean lint and 36 passing unit tests under 8.5, and every page type rendered with no deprecations or warnings.
 - CI now runs the test suite against a PHP matrix of 8.1, 8.3 and 8.5 (was 8.3 only), so compatibility across the supported range is checked on every push.
 
 ## [0.7.0] - 2026-10-04

@@ -318,7 +318,7 @@ function harbour_handle_enquiry_uploads(): array {
 		// Verify MIME by content, not extension.
 		$finfo = finfo_open( FILEINFO_MIME_TYPE );
 		$mime  = finfo_file( $finfo, $files['tmp_name'][ $i ] );
-		finfo_close( $finfo );
+		// finfo is an object since PHP 8.1 (freed by GC); finfo_close() is deprecated in 8.5.
 		if ( ! in_array( $mime, $allowed, true ) ) {
 			$out['error'] = __( 'Photos must be JPG, PNG or WebP. (iPhone HEIC photos are not supported — set the camera to “Most Compatible”, or send a screenshot.)', 'harbour-core' );
 			return $out;
