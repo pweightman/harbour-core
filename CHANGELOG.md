@@ -4,6 +4,14 @@ All notable changes to this plugin are documented here. Format: [Keep a Changelo
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-10-09
+### Added
+- New **Twycross** area page (`/areas/tree-surgeons-twycross/`) covering Twycross and the villages within a few miles — Norton-juxta-Twycross, Orton-on-the-Hill, Sheepy, Sibson and across the Warwickshire border — with local content and its own SEO title/description. Added to the primary and footer navigation. Targets "tree surgeon Twycross" (329 impressions in Search Console, previously no dedicated page).
+### Changed
+- Strengthened the **Hinckley** and **Lutterworth** area pages for local search: expanded the "villages we cover" lists to name-check the surrounding villages (Hinckley now lists 22, Lutterworth 15).
+### Note
+- These ship in the content bundle. After updating, run **Harbour → Setup → "Load / refresh site content"** and **"Build navigation menus"** on the live site to create the Twycross page, apply the expanded coverage, and add Twycross to the menus.
+
 ## [0.8.0] - 2026-10-09
 ### Added
 - Advice tag topic pages. A tag becomes an indexable SEO landing page only once it has at least 3 linked articles (filterable via `harbour_tag_min_posts`); thinner tags are kept out of the search index so they can't dilute the site with near-empty pages. Substantial tags get a clean title (`%term% — tree care advice | Harbour Tree Care`) and a default meta description via Rank Math's tag defaults — both editable per tag — a self-referencing canonical, and a Home › Advice › Tag breadcrumb in the JSON-LD. When Rank Math is inactive, our own title/description/canonical/robots provide the same behaviour.

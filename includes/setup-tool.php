@@ -187,6 +187,11 @@ function harbour_setup_build_menus(): void {
 				'parent' => 'areas',
 			),
 			array(
+				'title'  => 'Twycross',
+				'url'    => "$b/areas/tree-surgeons-twycross/",
+				'parent' => 'areas',
+			),
+			array(
 				'title'  => 'All areas covered',
 				'url'    => "$b/areas/",
 				'parent' => 'areas',
@@ -262,6 +267,10 @@ function harbour_setup_build_menus(): void {
 			array(
 				'title' => 'Nuneaton & Bedworth',
 				'url'   => "$b/areas/tree-surgeons-nuneaton/",
+			),
+			array(
+				'title' => 'Twycross',
+				'url'   => "$b/areas/tree-surgeons-twycross/",
 			),
 			array(
 				'title' => 'See all areas',
