@@ -4,6 +4,11 @@ All notable changes to this plugin are documented here. Format: [Keep a Changelo
 
 ## [Unreleased]
 
+## [0.7.1] - 2026-10-09
+### Changed
+- Verified PHP 8.5 compatibility (production now runs PHP 8.5): clean lint and 36 passing unit tests under 8.5, and every page type rendered with no deprecations or warnings. No code changes were required.
+- CI now runs the test suite against a PHP matrix of 8.1, 8.3 and 8.5 (was 8.3 only), so compatibility across the supported range is checked on every push.
+
 ## [0.7.0] - 2026-10-04
 ### Added
 - Cookie consent banner with Google Consent Mode v2, for use with Site Kit's GA4. Consent defaults to denied as early as possible in the head (before gtag runs), so Google Analytics stores nothing until the visitor clicks Accept; the choice is remembered and re-applied on later visits. On-brand, accessible, and theme-independent. If the WP Consent API is present its signal is set too. A new **Harbour → Settings → Privacy** tab toggles it on/off (on by default); the banner links to the WordPress privacy policy page when one is set. A "Cookie settings" link (any `.harbour-cookie-settings` element or `#cookie-settings` link), or `harbourManageCookies()`, re-opens it.
