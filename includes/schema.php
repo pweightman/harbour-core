@@ -110,6 +110,25 @@ function harbour_output_schema(): void {
 				'name'     => wp_strip_all_tags( get_the_title( get_queried_object_id() ) ),
 				'item'     => get_permalink( get_queried_object_id() ),
 			);
+		} elseif ( is_tag() ) {
+			// Advice tag archive: Home > Advice > Tag.
+			$blog_id = (int) get_option( 'page_for_posts' );
+			if ( $blog_id ) {
+				$items[] = array(
+					'@type'    => 'ListItem',
+					'position' => $pos++,
+					'name'     => get_the_title( $blog_id ),
+					'item'     => get_permalink( $blog_id ),
+				);
+			}
+			$term    = get_queried_object();
+			$link    = $term instanceof WP_Term ? get_term_link( $term ) : '';
+			$items[] = array(
+				'@type'    => 'ListItem',
+				'position' => $pos,
+				'name'     => $term instanceof WP_Term ? $term->name : wp_strip_all_tags( wp_get_document_title() ),
+				'item'     => ( $link && ! is_wp_error( $link ) ) ? $link : home_url( '/' ),
+			);
 		} else {
 			$title   = wp_get_document_title();
 			$items[] = array(

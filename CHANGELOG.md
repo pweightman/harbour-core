@@ -4,6 +4,10 @@ All notable changes to this plugin are documented here. Format: [Keep a Changelo
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-10-09
+### Added
+- Advice tag topic pages. A tag becomes an indexable SEO landing page only once it has at least 3 linked articles (filterable via `harbour_tag_min_posts`); thinner tags are kept out of the search index so they can't dilute the site with near-empty pages. Substantial tags get a clean title (`%term% — tree care advice | Harbour Tree Care`) and a default meta description via Rank Math's tag defaults — both editable per tag — a self-referencing canonical, and a Home › Advice › Tag breadcrumb in the JSON-LD. When Rank Math is inactive, our own title/description/canonical/robots provide the same behaviour.
+
 ## [0.7.2] - 2026-10-09
 ### Fixed
 - PHP 8.5: removed a `finfo_close()` call in the enquiry photo-upload validation. `finfo` has been an object (freed by GC) since PHP 8.1 and `finfo_close()` is deprecated in 8.5; it emitted a deprecation notice on every upload. Caught by the new 8.5 CI leg.

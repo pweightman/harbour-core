@@ -134,11 +134,23 @@ function harbour_seo_migrate( bool $dry_run = false ): array {
 			$titles_changed = true;
 		}
 	}
+	// Advice tag archives: a clean default title + description (editable per tag
+	// in Rank Math). Whether each tag is actually indexed is decided at runtime
+	// by the linked-article threshold in tags.php.
+	$tag_default_title = '%term% %sep% %sitename%';
+	if ( empty( $titles['tax_post_tag_title'] ) || $tag_default_title === $titles['tax_post_tag_title'] ) {
+		$titles['tax_post_tag_title'] = '%term% — tree care advice %sep% %sitename%';
+		$titles_changed               = true;
+	}
+	if ( empty( $titles['tax_post_tag_description'] ) ) {
+		$titles['tax_post_tag_description'] = 'Practical tree care and firewood advice tagged %term% from Harbour Tree Care, a Leicestershire family firm since 1977.';
+		$titles_changed                     = true;
+	}
 	if ( $titles_changed ) {
 		if ( ! $dry_run ) {
 			update_option( 'rank-math-options-titles', $titles );
 		}
-		$out['rows'][] = 'Service / area archive titles';
+		$out['rows'][] = 'Service / area / tag archive titles';
 	}
 
 	// Hand the advice (blog) index SEO to the posts page's Rank Math meta.

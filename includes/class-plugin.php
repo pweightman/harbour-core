@@ -26,6 +26,7 @@ final class Harbour_Core {
 		require_once $inc . 'seo.php';
 		require_once $inc . 'llms.php';
 		require_once $inc . 'rankmath.php';
+		require_once $inc . 'tags.php';
 		require_once $inc . 'consent.php';
 		require_once $inc . 'content-tags.php';
 		require_once $inc . 'geo.php';

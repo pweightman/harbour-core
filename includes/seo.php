@@ -73,6 +73,10 @@ function harbour_seo_canonical(): void {
 		$url = get_post_type_archive_link( 'service' );
 	} elseif ( is_post_type_archive( 'area' ) ) {
 		$url = get_post_type_archive_link( 'area' );
+	} elseif ( is_tag() ) {
+		$term = get_queried_object();
+		$link = $term instanceof WP_Term ? get_term_link( $term ) : '';
+		$url  = is_wp_error( $link ) ? '' : $link;
 	}
 	if ( $url ) {
 		echo '<link rel="canonical" href="' . esc_url( $url ) . '">' . "\n";
@@ -130,6 +134,9 @@ function harbour_archive_seo(): ?array {
 	}
 	if ( is_home() && ! is_front_page() ) {
 		return harbour_blog_index_seo();
+	}
+	if ( is_tag() ) {
+		return harbour_tag_archive_seo();
 	}
 	return null;
 }
