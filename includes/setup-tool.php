@@ -192,6 +192,16 @@ function harbour_setup_build_menus(): void {
 				'parent' => 'areas',
 			),
 			array(
+				'title'  => 'Oadby, Wigston & Great Glen',
+				'url'    => "$b/areas/tree-surgeons-oadby-wigston/",
+				'parent' => 'areas',
+			),
+			array(
+				'title'  => 'Kibworth & Harborough villages',
+				'url'    => "$b/areas/tree-surgeons-kibworth/",
+				'parent' => 'areas',
+			),
+			array(
 				'title'  => 'All areas covered',
 				'url'    => "$b/areas/",
 				'parent' => 'areas',
@@ -271,6 +281,14 @@ function harbour_setup_build_menus(): void {
 			array(
 				'title' => 'Twycross',
 				'url'   => "$b/areas/tree-surgeons-twycross/",
+			),
+			array(
+				'title' => 'Oadby, Wigston & Great Glen',
+				'url'   => "$b/areas/tree-surgeons-oadby-wigston/",
+			),
+			array(
+				'title' => 'Kibworth & Harborough villages',
+				'url'   => "$b/areas/tree-surgeons-kibworth/",
 			),
 			array(
 				'title' => 'See all areas',

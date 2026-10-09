@@ -4,6 +4,14 @@ All notable changes to this plugin are documented here. Format: [Keep a Changelo
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-10-09
+### Added
+- Two new area pages, each with unique local content, SEO title/description and village coverage, added to the primary and footer navigation: **Oadby, Wigston & Great Glen** (`/areas/tree-surgeons-oadby-wigston/`) and **Kibworth & the Harborough villages** (`/areas/tree-surgeons-kibworth/`).
+### Changed
+- Tightened area coverage so each place is owned by one page — sharpening the Leicester-city vs Leicestershire-county distinction. The **Leicester** page now covers the city and its west/north suburbs (Glenfield, Kirby Muxloe, Ratby, Groby, Anstey, Leicester Forest East, Braunstone), with Oadby/Wigston moved to their own page. **Hinckley** gains Newbold Verdon and Barlestone (and drops the Leicester-side Narborough/Enderby). **Market Harborough** gains Saddington, Wistow and Smeeton Westerby.
+### Note
+- Content ships in the bundle. Run **Harbour → Setup → "Load / refresh site content"** and **"Build navigation menus"** on the live site after updating.
+
 ## [0.9.0] - 2026-10-09
 ### Added
 - New **Twycross** area page (`/areas/tree-surgeons-twycross/`) covering Twycross and the villages within a few miles — Norton-juxta-Twycross, Orton-on-the-Hill, Sheepy, Sibson and across the Warwickshire border — with local content and its own SEO title/description. Added to the primary and footer navigation. Targets "tree surgeon Twycross" (329 impressions in Search Console, previously no dedicated page).
