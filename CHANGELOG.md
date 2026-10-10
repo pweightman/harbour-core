@@ -4,6 +4,10 @@ All notable changes to this plugin are documented here. Format: [Keep a Changelo
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-10-10
+### Changed
+- Enquiry notification photos are now sent as **standard file attachments** rather than inline (CID) images. This makes email delivery transport-agnostic: it works identically through the default PHPMailer, an SMTP plugin, or the **Resend** WordPress plugin. (The Resend plugin overrides `wp_mail()` and sends via the HTTP API, which never fires `phpmailer_init` and does not support inline CID images — so the previous inline photos would have arrived broken once the site switched to Resend.) `harbour_mail()` gains an optional `$attachments` parameter; the one-off `phpmailer_init` embedding path has been removed.
+
 ## [1.0.0] - 2026-10-10
 First stable release. The plugin has powered the live site through SEO migration to Rank Math, GA4 + Consent Mode, the full service/area/advice content model and self-updating from GitHub; the API and data model are now considered stable.
 ### Fixed

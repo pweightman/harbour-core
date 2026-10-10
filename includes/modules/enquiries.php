@@ -411,40 +411,26 @@ function harbour_notify_enquiry( int $post_id, array $data, array $atts ): void 
 	}
 	$body .= '</table>';
 
-	// Embed the uploaded photos inline, so whoever quotes has everything in the
-	// email itself and never needs to log in. We embed the resized 'large'
-	// version to keep the message a sensible size.
-	$inline = array();
-	foreach ( $atts as $i => $att_id ) {
+	// Attach the uploaded photos so whoever quotes has everything in the email
+	// itself and never needs to log in. We attach the resized 'large' version to
+	// keep the message a sensible size. Plain file attachments (not inline/CID)
+	// so they survive every transport — PHPMailer, SMTP and the Resend API alike
+	// (the Resend plugin's wp_mail() drops CID images).
+	$photos = array();
+	foreach ( $atts as $att_id ) {
 		$path = harbour_email_image_path( (int) $att_id );
 		if ( $path ) {
-			$cid      = 'harbourphoto' . $i;
-			$inline[] = array(
-				'path' => $path,
-				'cid'  => $cid,
-				'name' => basename( $path ),
-			);
+			$photos[] = $path;
 		}
 	}
-	if ( $inline ) {
-		$body .= '<p style="font-weight:bold;margin-top:20px">' . esc_html( sprintf( /* translators: %d: number of photos. */ _n( '%d photo attached:', '%d photos attached:', count( $inline ), 'harbour-core' ), count( $inline ) ) ) . '</p>';
-		foreach ( $inline as $img ) {
-			$body .= '<div style="margin:0 0 12px"><img src="cid:' . esc_attr( $img['cid'] ) . '" alt="" style="max-width:520px;width:100%;height:auto;border:1px solid #DEE4EC;border-radius:6px"></div>';
-		}
+	if ( $photos ) {
+		$body .= '<p style="font-weight:bold;margin-top:20px">' . esc_html( sprintf( /* translators: %d: number of photos. */ _n( '%d photo attached to this email.', '%d photos attached to this email.', count( $photos ), 'harbour-core' ), count( $photos ) ) ) . '</p>';
 	}
 
 	$body .= '<p style="margin-top:16px"><a href="' . esc_url( $edit ) . '">' . esc_html__( 'Open this enquiry in admin (optional)', 'harbour-core' ) . '</a></p>';
 
-	// Make the images available to phpmailer_init for inline embedding, scoped
-	// to this one send.
-	$GLOBALS['harbour_inline_images'] = $inline;
-	add_action( 'phpmailer_init', 'harbour_embed_inline_images' );
-
 	$reply = array( 'Reply-To: ' . $data['name'] . ' <' . $data['email'] . '>' );
-	$sent  = harbour_mail( $to, __( 'New enquiry — ', 'harbour-core' ) . $data['postcode'], $body, $reply );
-
-	// Clear so later mails (e.g. the customer acknowledgement) don't embed them.
-	$GLOBALS['harbour_inline_images'] = array();
+	$sent  = harbour_mail( $to, __( 'New enquiry — ', 'harbour-core' ) . $data['postcode'], $body, $reply, $photos );
 
 	if ( ! $sent ) {
 		update_post_meta( $post_id, '_harbour_mail_failed', current_time( 'mysql' ) );
@@ -477,25 +463,4 @@ function harbour_email_image_path( int $att_id ): string {
 		}
 	}
 	return $full;
-}
-
-/**
- * Embed the queued images into the outgoing message as inline (CID) parts.
- *
- * @param PHPMailer\PHPMailer\PHPMailer $phpmailer Mailer instance (by reference).
- */
-function harbour_embed_inline_images( $phpmailer ): void {
-	$images = $GLOBALS['harbour_inline_images'] ?? array();
-	if ( empty( $images ) || ! is_array( $images ) ) {
-		return;
-	}
-	foreach ( $images as $img ) {
-		if ( ! empty( $img['path'] ) && file_exists( $img['path'] ) ) {
-			try {
-				$phpmailer->addEmbeddedImage( $img['path'], $img['cid'], (string) $img['name'] );
-			} catch ( \Exception $e ) {
-				continue;
-			}
-		}
-	}
 }
