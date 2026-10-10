@@ -42,6 +42,63 @@ add_filter(
 	99
 );
 
+/**
+ * Current migration schema version. Bump this to make the one-shot migration
+ * re-run once on the next admin load (it only ever *fills* empty Rank Math
+ * fields, so re-running is safe and catches content added since last time).
+ */
+const HARBOUR_SEO_MIGRATION_VERSION = 2;
+
+/* -------------------------------------------------------------------------
+ * Runtime description fallback.
+ *
+ * Rank Math leaves the meta description empty when neither a per-page value
+ * nor a homepage/archive default is set — most visibly on the front page,
+ * which otherwise ships with no <meta name="description"> at all. Rather than
+ * depend on the one-shot migration having run (there's no WP-CLI on the live
+ * host), fill any empty description at render time from our own stored SEO
+ * fields. Self-healing: works the moment the plugin updates.
+ * ---------------------------------------------------------------------- */
+
+/**
+ * Our stored SEO description for the current request, if any.
+ *
+ * @return string
+ */
+function harbour_current_seo_desc(): string {
+	if ( is_front_page() ) {
+		$front = (int) get_option( 'page_on_front' );
+		if ( $front ) {
+			return (string) get_post_meta( $front, '_harbour_seo_desc', true );
+		}
+	}
+	if ( is_home() && function_exists( 'harbour_blog_index_seo' ) ) {
+		$seo = harbour_blog_index_seo();
+		return (string) ( $seo['desc'] ?? '' );
+	}
+	if ( is_singular( harbour_seo_post_types() ) ) {
+		return (string) get_post_meta( get_queried_object_id(), '_harbour_seo_desc', true );
+	}
+	return '';
+}
+
+/**
+ * Supply a meta description to Rank Math when it would otherwise emit none.
+ *
+ * @param string $desc Rank Math's computed description.
+ * @return string
+ */
+add_filter(
+	'rank_math/frontend/description',
+	function ( $desc ) {
+		if ( is_string( $desc ) && '' !== trim( $desc ) ) {
+			return $desc;
+		}
+		$ours = harbour_current_seo_desc();
+		return '' !== $ours ? $ours : $desc;
+	}
+);
+
 /* -------------------------------------------------------------------------
  * One-off migration: _harbour_seo_* -> rank_math_*
  * ---------------------------------------------------------------------- */
@@ -195,11 +252,17 @@ function harbour_seo_migrate( bool $dry_run = false ): array {
  * Run the migration once, when Rank Math is active.
  */
 function harbour_rankmath_maybe_migrate(): void {
-	if ( ! harbour_rankmath_active() || get_option( 'harbour_rankmath_migrated' ) ) {
+	if ( ! harbour_rankmath_active() ) {
+		return;
+	}
+	// Re-run once whenever the migration schema version advances. It only ever
+	// fills empty Rank Math fields, so re-running catches content (e.g. the
+	// front-page description) added since the last run on hosts with no CLI.
+	if ( (int) get_option( 'harbour_rankmath_migrated' ) >= HARBOUR_SEO_MIGRATION_VERSION ) {
 		return;
 	}
 	$report = harbour_seo_migrate( false );
-	update_option( 'harbour_rankmath_migrated', 1 );
+	update_option( 'harbour_rankmath_migrated', HARBOUR_SEO_MIGRATION_VERSION );
 	update_option( 'harbour_rankmath_migrated_count', (int) $report['posts'] );
 }
 add_action( 'admin_init', 'harbour_rankmath_maybe_migrate' );

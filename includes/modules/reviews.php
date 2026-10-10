@@ -87,7 +87,7 @@ function harbour_reviews_render( array $args = array() ): string {
 		echo '<div class="quote reveal">';
 		if ( $rating >= 1 && $rating <= 5 ) {
 			/* translators: %d: star rating out of 5. */
-				echo '<div class="stars" aria-label="' . esc_attr( sprintf( __( '%d out of 5', 'harbour-core' ), $rating ) ) . '">';
+				echo '<div class="stars" role="img" aria-label="' . esc_attr( sprintf( __( '%d out of 5', 'harbour-core' ), $rating ) ) . '">';
 			for ( $i = 0; $i < $rating; $i++ ) {
 				echo '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3 6.5 7 .9-5 4.8 1.3 7L12 17.8 5.7 21.2 7 14.2 2 9.4l7-.9z"/></svg>';
 			}

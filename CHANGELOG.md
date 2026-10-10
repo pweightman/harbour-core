@@ -4,6 +4,14 @@ All notable changes to this plugin are documented here. Format: [Keep a Changelo
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-10-10
+First stable release. The plugin has powered the live site through SEO migration to Rank Math, GA4 + Consent Mode, the full service/area/advice content model and self-updating from GitHub; the API and data model are now considered stable.
+### Fixed
+- **PageSpeed "Agentic Browsing" / accessibility tree**: the dynamic review stars output `<div class="stars" aria-label="N out of 5">` with no role. A bare `<div>` has the implicit `generic` role, on which `aria-label` is *prohibited* — so PageSpeed flagged "prohibited ARIA attributes" and the accessibility tree as not well-formed. The element is now `role="img"`, which legitimately carries the text alternative (the star SVGs remain `aria-hidden`).
+- **Missing meta description on the home page** (and any page Rank Math left blank): a self-healing runtime fallback now supplies the description from our stored `_harbour_seo_desc` (and the blog-index default) via the `rank_math/frontend/description` filter whenever Rank Math would emit none. This needs no WP-CLI, so it fixes the live front page the moment the plugin updates — previously the one-shot `_harbour_seo_* → rank_math_*` migration could miss content added after it first ran.
+### Changed
+- The one-shot Rank Math SEO migration is now versioned (`HARBOUR_SEO_MIGRATION_VERSION`): bumping it re-runs the migration once on the next admin load, so hosts with no CLI still pick up newly added SEO fields. It only ever fills *empty* Rank Math fields, so re-running is safe.
+
 ## [0.10.0] - 2026-10-09
 ### Added
 - Two new area pages, each with unique local content, SEO title/description and village coverage, added to the primary and footer navigation: **Oadby, Wigston & Great Glen** (`/areas/tree-surgeons-oadby-wigston/`) and **Kibworth & the Harborough villages** (`/areas/tree-surgeons-kibworth/`).
