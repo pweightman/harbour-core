@@ -207,6 +207,10 @@ function harbour_setup_build_menus(): void {
 				'parent' => 'areas',
 			),
 			array(
+				'title' => 'Advice',
+				'url'   => "$b/advice/",
+			),
+			array(
 				'title' => 'Emergency',
 				'url'   => "$b/emergency-tree-surgeon-leicestershire/",
 			),

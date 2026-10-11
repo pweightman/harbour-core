@@ -4,6 +4,11 @@ All notable changes to this plugin are documented here. Format: [Keep a Changelo
 
 ## [Unreleased]
 
+## [1.0.2] - 2026-10-11
+### Fixed
+- The primary navigation built by **Setup → "Build navigation menus"** was missing the **Advice** link (to the `/advice/` blog), so rebuilding the menus dropped it. Added "Advice" as a top-level item (between Areas and Emergency). Re-run "Build navigation menus" after updating to apply it.
+
+
 ## [1.0.1] - 2026-10-10
 ### Changed
 - Enquiry notification photos are now sent as **standard file attachments** rather than inline (CID) images. This makes email delivery transport-agnostic: it works identically through the default PHPMailer, an SMTP plugin, or the **Resend** WordPress plugin. (The Resend plugin overrides `wp_mail()` and sends via the HTTP API, which never fires `phpmailer_init` and does not support inline CID images — so the previous inline photos would have arrived broken once the site switched to Resend.) `harbour_mail()` gains an optional `$attachments` parameter; the one-off `phpmailer_init` embedding path has been removed.
