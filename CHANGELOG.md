@@ -4,6 +4,10 @@ All notable changes to this plugin are documented here. Format: [Keep a Changelo
 
 ## [Unreleased]
 
+## [1.0.4] - 2026-10-15
+### Changed
+- The **Hedge cutting** service is now shipped as a published page rather than a draft. Its content was already complete, it is linked contextually from eight area pages and named in the homepage meta, so it now goes live on **Setup → "Load / refresh site content"** instead of needing a manual publish.
+
 ## [1.0.3] - 2026-10-15
 ### Changed
 - **Internal linking on service and area pages.** The in-prose links in the bundled service/area content pointed at the old prototype filenames (`service-pruning.html`, `prices.html`, `contact.html`…), which resolved to 404s on the live site. All of these are now real relative URLs, and a consistent set of natural, contextual cross-links has been added across all 16 service/area pages (service↔service, area→service, and a few neighbouring area→area links) to strengthen topical relevance and internal link equity. Links to the draft Prices page were repointed to the Contact (free-quote) page. Re-run **Setup → "Load / refresh site content"** after updating to apply (this also creates the Hedge cutting service page, which was in the content set but not yet live).
