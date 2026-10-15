@@ -47,7 +47,7 @@ add_filter(
  * re-run once on the next admin load (it only ever *fills* empty Rank Math
  * fields, so re-running is safe and catches content added since last time).
  */
-const HARBOUR_SEO_MIGRATION_VERSION = 2;
+const HARBOUR_SEO_MIGRATION_VERSION = 3;
 
 /* -------------------------------------------------------------------------
  * Runtime description fallback.
@@ -177,6 +177,7 @@ function harbour_seo_migrate( bool $dry_run = false ): array {
 	$archives       = array(
 		'service' => harbour_service_archive_seo(),
 		'area'    => harbour_area_archive_seo(),
+		'job'     => harbour_job_archive_seo(),
 	);
 	$titles_changed = false;
 	foreach ( $archives as $pt => $seo ) {

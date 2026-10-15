@@ -109,6 +109,18 @@ function harbour_area_archive_seo(): array {
 }
 
 /**
+ * SEO title/description values for the our-work (job) archive (context-free).
+ *
+ * @return array{title:string,desc:string}
+ */
+function harbour_job_archive_seo(): array {
+	return array(
+		'title' => 'Recent Tree Work in Leicestershire | Harbour Tree Care',
+		'desc'  => 'Photos of recent tree surgery across Leicestershire — felling, pruning, stump grinding and crown reductions near Lutterworth and Hinckley. Free quotes.',
+	);
+}
+
+/**
  * SEO title/description values for the advice (blog) index (context-free).
  *
  * @return array{title:string,desc:string}

@@ -438,9 +438,9 @@ function harbour_setup_refresh_content(): string {
 		'thank-you'                             => array( 'Thank you', '', '' ),
 		'tree-surgery-prices'                   => array( 'Prices', 'Tree Surgery Prices in Leicestershire | Harbour Tree Care', 'Honest guide prices for tree work in Leicestershire — pruning, felling, stump grinding and firewood — so you know where you stand. Free fixed quotes.', 'draft' ),
 		'emergency-tree-surgeon-leicestershire' => array( 'Emergency tree surgeon', 'Emergency Tree Surgeon Leicestershire | Harbour Tree Care', 'Storm-damaged or fallen tree in Leicestershire? Emergency tree removal near Lutterworth and Hinckley. Family firm since 1977.' ),
-		'privacy'                               => array( 'Privacy', '', '' ),
-		'terms'                                 => array( 'Terms', '', '' ),
-		'accessibility'                         => array( 'Accessibility', '', '' ),
+		'privacy'                               => array( 'Privacy', 'Privacy Policy | Harbour Tree Care', 'How Harbour Tree Care collects, uses and protects your details when you ask for a tree surgery quote. A family firm near Lutterworth, Leicestershire.' ),
+		'terms'                                 => array( 'Terms', 'Terms of Service | Harbour Tree Care', 'The terms covering quotes, tree surgery work and payment with Harbour Tree Care, family-run tree surgeons near Lutterworth and Hinckley, Leicestershire.' ),
+		'accessibility'                         => array( 'Accessibility', 'Accessibility | Harbour Tree Care', 'How we keep harbourtreecare.co.uk usable for everyone, and how to tell us about any accessibility problem you find on the site.' ),
 	);
 	foreach ( $pages as $slug => $info ) {
 		$title    = $info[0];

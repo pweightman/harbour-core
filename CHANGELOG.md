@@ -4,6 +4,13 @@ All notable changes to this plugin are documented here. Format: [Keep a Changelo
 
 ## [Unreleased]
 
+## [1.0.3] - 2026-10-15
+### Changed
+- **Internal linking on service and area pages.** The in-prose links in the bundled service/area content pointed at the old prototype filenames (`service-pruning.html`, `prices.html`, `contact.html`…), which resolved to 404s on the live site. All of these are now real relative URLs, and a consistent set of natural, contextual cross-links has been added across all 16 service/area pages (service↔service, area→service, and a few neighbouring area→area links) to strengthen topical relevance and internal link equity. Links to the draft Prices page were repointed to the Contact (free-quote) page. Re-run **Setup → "Load / refresh site content"** after updating to apply (this also creates the Hedge cutting service page, which was in the content set but not yet live).
+### Added
+- **SEO meta for the legal pages.** Privacy, Terms and Accessibility now carry proper SEO titles and meta descriptions (they previously shipped with none). Applied on **Setup → "Load / refresh site content"**; the runtime description fallback surfaces them immediately.
+- **SEO title/description for the `/our-work/` (job) archive**, handed to Rank Math's archive options by the one-shot migration (previously only the service and area archives were covered, so `/our-work/` fell back to Rank Math's generic "… Archive" default). Migration schema bumped to v3 so it re-applies once on the next admin load.
+
 ## [1.0.2] - 2026-10-11
 ### Fixed
 - The primary navigation built by **Setup → "Build navigation menus"** was missing the **Advice** link (to the `/advice/` blog), so rebuilding the menus dropped it. Added "Advice" as a top-level item (between Areas and Emergency). Re-run "Build navigation menus" after updating to apply it.
