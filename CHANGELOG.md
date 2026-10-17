@@ -4,6 +4,13 @@ All notable changes to this plugin are documented here. Format: [Keep a Changelo
 
 ## [Unreleased]
 
+## [1.0.5] - 2026-10-17
+### Added
+- **"Tree work we do in Leicester" section** on the Leicester area page (in `content-data.json`): an H2 plus five service H3s, each with a Leicester-anchored in-prose link to the matching service (pruning/crown reduction, felling, stump grinding, emergency, and surveys/hedges/clearance). Targets the Leicester service cluster the weekly SEO run flagged (730 impressions, 0 clicks; "crown reduction leicester" @ 13.3). Apply with Setup → "Load / refresh site content".
+### Changed
+- **`service_type` is now an admin-only taxonomy** (`public => false`, `publicly_queryable => false`, `rewrite => false`, `query_var => false`; admin UI, block-editor panel, admin column and REST all kept). Its thin `/service-type/` archive was competing with the real service pages for the same queries. Old archive URLs now **301** to the matching service via `harbour_redirect_service_type_archives()` (`/service-type/pruning-crown-reduction/` → `/services/tree-pruning-crown-reduction/`, unknown slugs → `/tree-surgery-leicestershire/`). Rewrite rules flush on the version bump.
+- Homepage and Kibworth `seo_title` source values aligned with the shorter titles now set live (`Tree Surgeons in Hinckley & Lutterworth | Harbour Tree Care`; `Tree Surgeons in Kibworth & Fleckney | Harbour Tree Care`).
+
 ## [1.0.4] - 2026-10-15
 ### Changed
 - The **Hedge cutting** service is now shipped as a published page rather than a draft. Its content was already complete, it is linked contextually from eight area pages and named in the homepage meta, so it now goes live on **Setup → "Load / refresh site content"** instead of needing a manual publish.

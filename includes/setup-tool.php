@@ -431,7 +431,7 @@ function harbour_setup_refresh_content(): string {
 	// Ensure the standalone pages exist (templates provide their copy) and carry
 	// their SEO title/description.
 	$pages = array(
-		'home'                                  => array( 'Home', 'Tree Surgeons in Leicestershire | Harbour Tree Care', 'Family-run tree surgeons near Lutterworth and Hinckley since 1977. Pruning, felling, stump grinding and firewood. Free site visits and written quotes.' ),
+		'home'                                  => array( 'Home', 'Tree Surgeons in Hinckley & Lutterworth | Harbour Tree Care', 'Family-run tree surgeons near Lutterworth and Hinckley since 1977. Pruning, felling, stump grinding and firewood. Free site visits and written quotes.' ),
 		'about'                                 => array( 'About', 'About Harbour Tree Care | Family Tree Surgeons since 1977', 'Harbour Tree Care was started by Roy Harbour in 1977 and is run today by his son Neil, from the same yard at Ashby Magna near Lutterworth.' ),
 		'contact'                               => array( 'Contact', 'Contact Harbour Tree Care | Free Tree Surgery Quotes', 'Call for a free no-obligation quote, or send a few photos. Tree surgeons at Ashby Magna near Lutterworth, Leicestershire.' ),
 		'order-logs'                            => array( 'Order logs', 'Order Seasoned Firewood | Harbour Tree Care', 'Order seasoned hardwood logs for local delivery around Lutterworth and Hinckley. Pay on delivery.' ),
