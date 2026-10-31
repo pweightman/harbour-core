@@ -81,8 +81,8 @@ function harbour_redirect_service_type_archives(): void {
 	if ( '' === $path || 0 !== strpos( $path, '/service-type/' ) ) {
 		return;
 	}
-	$slug = trim( substr( $path, strlen( '/service-type/' ) ), '/' );
-	$map  = array(
+	$slug   = trim( substr( $path, strlen( '/service-type/' ) ), '/' );
+	$map    = array(
 		'pruning-crown-reduction' => '/services/tree-pruning-crown-reduction/',
 	);
 	$target = isset( $map[ $slug ] ) ? $map[ $slug ] : '/tree-surgery-leicestershire/';
