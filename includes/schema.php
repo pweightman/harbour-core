@@ -182,11 +182,13 @@ function harbour_output_schema(): void {
 		}
 	}
 
-	// BlogPosting for single advice articles.
+	// BlogPosting for single advice articles: the page's one article entity
+	// (harbour_has_article_schema() tells Corantr Media Desk not to add its own).
 	if ( is_singular( 'post' ) ) {
 		$pid     = get_queried_object_id();
 		$post    = array(
 			'@type'            => 'BlogPosting',
+			'@id'              => get_permalink( $pid ) . '#article',
 			'headline'         => wp_strip_all_tags( get_the_title( $pid ) ),
 			'datePublished'    => get_the_date( 'c', $pid ),
 			'dateModified'     => get_the_modified_date( 'c', $pid ),
@@ -205,7 +207,7 @@ function harbour_output_schema(): void {
 		if ( $img ) {
 			$post['image'] = $img;
 		}
-		$graph[] = $post;
+		$graph[] = harbour_schema_desk_extras( $post, $pid );
 	}
 
 	$data = array(
@@ -216,6 +218,45 @@ function harbour_output_schema(): void {
 	echo "\n" . '<script type="application/ld+json">' . wp_json_encode( $data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) . '</script>' . "\n";
 }
 add_action( 'wp_head', 'harbour_output_schema', 20 );
+
+/**
+ * Tell Corantr Media Desk that single posts already have an article entity
+ * (the BlogPosting above), so it doesn't print a second one.
+ *
+ * @param bool $detected Whether the Desk found an SEO plugin doing it.
+ * @return bool
+ */
+function harbour_has_article_schema( $detected ): bool {
+	return is_singular( 'post' ) || (bool) $detected;
+}
+add_filter( 'corantr_media_desk_has_article_schema', 'harbour_has_article_schema' );
+
+/**
+ * For posts written by Corantr Media Desk, add what the Desk knows to the
+ * BlogPosting: the sources it was written from (isBasedOn) and, for guides,
+ * the question it answers (about). Nothing changes without the Desk plugin.
+ *
+ * @param array $node    The BlogPosting node.
+ * @param int   $post_id The post.
+ * @return array
+ */
+function harbour_schema_desk_extras( array $node, int $post_id ): array {
+	if ( ! class_exists( '\Hynca\MediaDesk\Schema' ) || ! method_exists( '\Hynca\MediaDesk\Schema', 'extras' ) || ! get_post_meta( $post_id, '_hyncadesk_generated', true ) ) {
+		return $node;
+	}
+	$post = get_post( $post_id );
+	if ( ! $post instanceof WP_Post ) {
+		return $node;
+	}
+	$extras = \Hynca\MediaDesk\Schema::extras( $post );
+	if ( ! empty( $extras['isBasedOn'] ) ) {
+		$node['isBasedOn'] = array_values( array_unique( array_merge( (array) ( $node['isBasedOn'] ?? array() ), $extras['isBasedOn'] ) ) );
+	}
+	if ( ! empty( $extras['about'] ) && empty( $node['about'] ) ) {
+		$node['about'] = $extras['about'];
+	}
+	return $node;
+}
 
 /**
  * Keep the thank-you page and any private content out of the index.

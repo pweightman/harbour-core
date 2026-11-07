@@ -4,6 +4,10 @@ All notable changes to this plugin are documented here. Format: [Keep a Changelo
 
 ## [Unreleased]
 
+## [1.0.8] - 2026-11-07
+### Fixed
+- **One article entity per advice post.** Posts written by Corantr Media Desk carried two: our `BlogPosting` in the `@graph` and the Desk plugin's own standalone `Article`/`NewsArticle`, with a different author and publisher and no `@id` linking them. The schema now declares `corantr_media_desk_has_article_schema` on single posts, so the Desk plugin (1.11.0 or later) leaves its own out, and the `BlogPosting` takes the Desk's sources (`isBasedOn`) and, for guides, the question it answers (`about`) from `\Hynca\MediaDesk\Schema::extras()`. The `BlogPosting` now has `@id` `{permalink}#article`. Nothing to refresh: it applies as soon as both plugins are updated.
+
 ## [1.0.7] - 2026-11-07
 ### Changed
 - **Tree surveys & reports page expanded** (in `content-data.json`, slug `tree-surveys-reports`): Leicester-led SEO title/description and hero, four new H2 sections (BS 5837 planning surveys, house sales and mortgages, TPOs and conservation areas, where we survey with links to eight area pages) and a five-question FAQ, which brings back FAQPage schema on the page. From the weekly SEO run (W7): survey queries ranking 18–23 for Leicester/Leicestershire and 7–14 for Warwickshire against the thinnest service page. Apply with Setup → "Load / refresh site content".
