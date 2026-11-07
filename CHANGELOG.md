@@ -4,6 +4,10 @@ All notable changes to this plugin are documented here. Format: [Keep a Changelo
 
 ## [Unreleased]
 
+## [1.0.7] - 2026-11-07
+### Changed
+- **Tree surveys & reports page expanded** (in `content-data.json`, slug `tree-surveys-reports`): Leicester-led SEO title/description and hero, four new H2 sections (BS 5837 planning surveys, house sales and mortgages, TPOs and conservation areas, where we survey with links to eight area pages) and a five-question FAQ, which brings back FAQPage schema on the page. From the weekly SEO run (W7): survey queries ranking 18–23 for Leicester/Leicestershire and 7–14 for Warwickshire against the thinnest service page. Apply with Setup → "Load / refresh site content".
+
 ## [1.0.5] - 2026-10-17
 ### Added
 - **"Tree work we do in Leicester" section** on the Leicester area page (in `content-data.json`): an H2 plus five service H3s, each with a Leicester-anchored in-prose link to the matching service (pruning/crown reduction, felling, stump grinding, emergency, and surveys/hedges/clearance). Targets the Leicester service cluster the weekly SEO run flagged (730 impressions, 0 clicks; "crown reduction leicester" @ 13.3). Apply with Setup → "Load / refresh site content".
