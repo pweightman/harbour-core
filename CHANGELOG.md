@@ -4,6 +4,10 @@ All notable changes to this plugin are documented here. Format: [Keep a Changelo
 
 ## [Unreleased]
 
+## [1.0.9] - 2026-11-11
+### Fixed
+- **Duplicate enquiry records from repeat submissions.** The enquiry form was logging the same enquiry two or three times within the same minute (e.g. "James — LE10 0NE" ×3, "Fiona Perry — CV22 6JP" ×2). Cause: the form's response is slow (it re-encodes uploaded photos and sends two emails via the Resend API before redirecting), so impatient visitors tap **Send** again — and nothing stopped the repeat. The reusable nonce, the ≥3s honeypot timing and the 5/hour rate limiter all pass a second identical click, and behind Cloudflare the rate limiter can't even tell visitors apart because `REMOTE_ADDR` is a Cloudflare edge IP. Added a content-fingerprint guard (`harbour_is_fresh_submission()`): a submission identical to one seen in the last 2 minutes is treated as a success — the visitor still lands on `/thank-you/` — but no second record is created, and any photos re-uploaded on the repeat are cleaned up rather than left orphaned. Keyed on the submitted fields, not the IP, so it also absorbs browser POST retries and CDN replays. No setup step; effective as soon as the plugin updates.
+
 ## [1.0.8] - 2026-11-07
 ### Fixed
 - **One article entity per advice post.** Posts written by Corantr Media Desk carried two: our `BlogPosting` in the `@graph` and the Desk plugin's own standalone `Article`/`NewsArticle`, with a different author and publisher and no `@id` linking them. The schema now declares `corantr_media_desk_has_article_schema` on single posts, so the Desk plugin (1.11.0 or later) leaves its own out, and the `BlogPosting` takes the Desk's sources (`isBasedOn`) and, for guides, the question it answers (`about`) from `\Hynca\MediaDesk\Schema::extras()`. The `BlogPosting` now has `@id` `{permalink}#article`. Nothing to refresh: it applies as soon as both plugins are updated.

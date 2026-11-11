@@ -231,6 +231,21 @@ function harbour_process_enquiry(): array {
 		return $fail( $errors, $old );
 	}
 
+	// Collapse duplicate submissions of the same enquiry (impatient double-clicks
+	// on the slow — photo-processing + email — response, browser POST retries, or a
+	// CDN replay). Fingerprinted on the content, so it works behind Cloudflare,
+	// which masks the IP the rate limiter relies on. A repeat is treated as a
+	// success: the person still lands on /thank-you/, but no second record is made.
+	$fingerprint = implode( '|', array( $old['name'], $old['phone'], $old['email'], $old['postcode'], $old['service'], $old['message'] ) );
+	if ( ! harbour_is_fresh_submission( 'enquiry', $fingerprint ) ) {
+		// Photos for this repeat were uploaded during validation above; with no
+		// record to parent them, drop them so duplicates leave no orphaned media.
+		foreach ( $upload['attachment_ids'] as $att_id ) {
+			wp_delete_attachment( (int) $att_id, true );
+		}
+		return array( 'ok' => true );
+	}
+
 	// Create the record first — it must survive a mail failure.
 	$town    = harbour_normalize_postcode( $old['postcode'] );
 	$title   = sprintf( '%s — %s — %s', $old['name'], $town, wp_date( 'j M Y' ) );
