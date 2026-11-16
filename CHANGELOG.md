@@ -6,7 +6,7 @@ All notable changes to this plugin are documented here. Format: [Keep a Changelo
 
 ## [1.2.1] - 2026-11-16
 ### Changed
-- **Mailing-list band visibility** (`includes/modules/signup.php`, `harbour_show_signup_band()`). The band now shows to **all visitors, logged in or out** — previously it was hidden from logged-in users, which meant the site owner never saw it while signed in to wp-admin. It is now **suppressed only on the search-results and 404 templates**, which already render a prominent search form as their main content (so those pages don't stack two competing boxes above the footer). Still filterable via `harbour_show_signup_band`.
+- **Mailing-list band now shows on every page, for everyone** (`includes/modules/signup.php`, `harbour_show_signup_band()`). Previously it was hidden from logged-in users, so the site owner never saw it while signed in to wp-admin (what showed above the footer on the search/404 pages was the theme's own pre-existing search form, not the band). It is now a true site-wide footer element — rendered on every front-end page, for all visitors logged in or out, with no per-template setup. Still filterable via `harbour_show_signup_band` for any page that wants to opt out.
 
 ## [1.2.0] - 2026-11-16
 ### Added

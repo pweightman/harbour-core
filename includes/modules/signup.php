@@ -24,17 +24,15 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Should the sign-up band be shown on the current request?
  *
- * Shown on every front-end page (to all visitors, logged in or out) except the
- * search-results and 404 templates, which already present a prominent search
- * form as their main content — stacking the band under it would give two
- * competing boxes above the footer. Filterable so individual templates can
- * opt in or out.
+ * Rendered from the footer, so it shows on every front-end page by default, for
+ * all visitors (logged in or out) — a true site-wide footer element that never
+ * needs adding per template. Filterable via `harbour_show_signup_band` so a
+ * specific template or site can still opt out.
  *
  * @return bool
  */
 function harbour_show_signup_band(): bool {
-	$show = ! ( is_search() || is_404() );
-	return (bool) apply_filters( 'harbour_show_signup_band', $show );
+	return (bool) apply_filters( 'harbour_show_signup_band', true );
 }
 
 /**
