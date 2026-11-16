@@ -31,6 +31,7 @@ final class Harbour_Core {
 		require_once $inc . 'content-tags.php';
 		require_once $inc . 'geo.php';
 		require_once $inc . 'modules/enquiries.php';
+		require_once $inc . 'modules/signup.php';
 		require_once $inc . 'modules/log-orders.php';
 		require_once $inc . 'modules/reviews.php';
 		require_once $inc . 'modules/gallery.php';

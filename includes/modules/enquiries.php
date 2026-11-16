@@ -524,10 +524,13 @@ function harbour_marketing_list_slug(): string {
  * opt-in confirmation — and \Postbag\Api::subscribe() never throws, so a mailing
  * list problem can never disturb the enquiry the visitor actually came to send.
  *
- * @param string $email Enquirer email (already validated upstream).
- * @param string $name  Enquirer name.
+ * @param string $email   Subscriber email (already validated upstream).
+ * @param string $name    Subscriber name, or '' when not collected.
+ * @param string $source  Where the sign-up came from, e.g. 'harbour-enquiry'
+ *                        or 'harbour-signup-band'. Recorded on the subscriber.
+ * @param string $wording Consent-wording version for the audit trail.
  */
-function harbour_subscribe_marketing( string $email, string $name ): void {
+function harbour_subscribe_marketing( string $email, string $name, string $source = 'harbour-enquiry', string $wording = 'harbour-enquiry-v1' ): void {
 	if ( ! is_email( $email ) || ! class_exists( '\\Postbag\\Api' ) ) {
 		return;
 	}
@@ -540,10 +543,10 @@ function harbour_subscribe_marketing( string $email, string $name ): void {
 		$email,
 		'' !== $name ? $name : null,
 		array(
-			'source'          => 'harbour-enquiry',
+			'source'          => $source,
 			'ip'              => harbour_client_ip(),
 			'user_agent'      => isset( $_SERVER['HTTP_USER_AGENT'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ) : '',
-			'wording_version' => 'harbour-enquiry-v1',
+			'wording_version' => $wording,
 		)
 	);
 }
