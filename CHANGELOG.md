@@ -4,6 +4,10 @@ All notable changes to this plugin are documented here. Format: [Keep a Changelo
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-11-16
+### Changed
+- **Mailing-list band visibility** (`includes/modules/signup.php`, `harbour_show_signup_band()`). The band now shows to **all visitors, logged in or out** — previously it was hidden from logged-in users, which meant the site owner never saw it while signed in to wp-admin. It is now **suppressed only on the search-results and 404 templates**, which already render a prominent search form as their main content (so those pages don't stack two competing boxes above the footer). Still filterable via `harbour_show_signup_band`.
+
 ## [1.2.0] - 2026-11-16
 ### Added
 - **"Join our mailing list" band above the footer, site-wide** (`includes/modules/signup.php`). A compact email-capture band the theme renders above the footer on every front-end page (`harbour_render_signup_band()`). Entering an address subscribes it to the Postbag list **"Tree care tips & news"** (`tree-care-tips-news`) through the same `harbour_subscribe_marketing()` path as the enquiry opt-in — connected to Corantr, Corantr sends the double opt-in confirmation — tagged with source `harbour-signup-band`. Self-posting and processed on `template_redirect` like the enquiry form, sharing its nonce, honeypot/timing, per-IP rate limit (`signup` bucket) and content-fingerprint de-duplication. A valid submit uses Post/Redirect/Get back to the originating page with `?harbour_subscribed=1` and shows a "check your inbox" confirmation; a bad address re-renders the band with the error inline. The visitor's act of entering their address in a clearly-labelled sign-up band plus the confirmation email is the PECR affirmative opt-in — no pre-ticked box. Shown to logged-out visitors only and filterable per request via `harbour_show_signup_band`. `harbour_subscribe_marketing()` gained optional `$source`/`$wording` arguments (defaults unchanged, so the enquiry opt-in is untouched).
