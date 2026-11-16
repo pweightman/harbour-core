@@ -130,6 +130,11 @@ function harbour_render_enquiry_form( array $ctx = array() ): void {
 			?>
 			<span class="field-error" id="err-consent"><?php echo esc_html( $errors['consent'] ); ?></span><?php endif; ?>
 
+		<label class="consent" style="margin-bottom:var(--s-5)">
+			<input type="checkbox" name="harbour_marketing_optin" value="1" <?php checked( ! empty( $old['marketing'] ) ); ?>>
+			<span><?php esc_html_e( 'Email me the occasional tree-care tip and seasonal offer from Harbour Tree Care. No spam, and you can unsubscribe any time.', 'harbour-core' ); ?></span>
+		</label>
+
 		<?php harbour_honeypot_fields(); ?>
 		<input type="hidden" name="harbour_action" value="enquiry">
 		<?php wp_nonce_field( 'harbour_enquiry', 'harbour_nonce' ); ?>
@@ -182,13 +187,14 @@ function harbour_process_enquiry(): array {
 	}
 
 	$old = array(
-		'name'     => sanitize_text_field( wp_unslash( $_POST['harbour_name'] ?? '' ) ),
-		'phone'    => sanitize_text_field( wp_unslash( $_POST['harbour_phone'] ?? '' ) ),
-		'email'    => sanitize_email( wp_unslash( $_POST['harbour_email'] ?? '' ) ),
-		'postcode' => sanitize_text_field( wp_unslash( $_POST['harbour_postcode'] ?? '' ) ),
-		'service'  => sanitize_text_field( wp_unslash( $_POST['harbour_service'] ?? '' ) ),
-		'message'  => sanitize_textarea_field( wp_unslash( $_POST['harbour_message'] ?? '' ) ),
-		'consent'  => ! empty( $_POST['harbour_consent'] ),
+		'name'      => sanitize_text_field( wp_unslash( $_POST['harbour_name'] ?? '' ) ),
+		'phone'     => sanitize_text_field( wp_unslash( $_POST['harbour_phone'] ?? '' ) ),
+		'email'     => sanitize_email( wp_unslash( $_POST['harbour_email'] ?? '' ) ),
+		'postcode'  => sanitize_text_field( wp_unslash( $_POST['harbour_postcode'] ?? '' ) ),
+		'service'   => sanitize_text_field( wp_unslash( $_POST['harbour_service'] ?? '' ) ),
+		'message'   => sanitize_textarea_field( wp_unslash( $_POST['harbour_message'] ?? '' ) ),
+		'consent'   => ! empty( $_POST['harbour_consent'] ),
+		'marketing' => ! empty( $_POST['harbour_marketing_optin'] ),
 	);
 
 	// Honeypot + timing.
@@ -229,6 +235,21 @@ function harbour_process_enquiry(): array {
 
 	if ( $errors ) {
 		return $fail( $errors, $old );
+	}
+
+	// Collapse duplicate submissions of the same enquiry (impatient double-clicks
+	// on the slow — photo-processing + email — response, browser POST retries, or a
+	// CDN replay). Fingerprinted on the content, so it works behind Cloudflare,
+	// which masks the IP the rate limiter relies on. A repeat is treated as a
+	// success: the person still lands on /thank-you/, but no second record is made.
+	$fingerprint = implode( '|', array( $old['name'], $old['phone'], $old['email'], $old['postcode'], $old['service'], $old['message'] ) );
+	if ( ! harbour_is_fresh_submission( 'enquiry', $fingerprint ) ) {
+		// Photos for this repeat were uploaded during validation above; with no
+		// record to parent them, drop them so duplicates leave no orphaned media.
+		foreach ( $upload['attachment_ids'] as $att_id ) {
+			wp_delete_attachment( (int) $att_id, true );
+		}
+		return array( 'ok' => true );
 	}
 
 	// Create the record first — it must survive a mail failure.
@@ -272,6 +293,14 @@ function harbour_process_enquiry(): array {
 	}
 
 	harbour_notify_enquiry( $post_id, $old, $upload['attachment_ids'] );
+
+	// Marketing opt-in → Postbag mailing list. A separate, optional consent, so
+	// it is recorded on the enquiry for the audit trail and only acted on when
+	// ticked. Never breaks the enquiry if the mailing list is unavailable.
+	if ( $old['marketing'] ) {
+		update_post_meta( $post_id, '_harbour_marketing_optin', current_time( 'mysql' ) );
+		harbour_subscribe_marketing( $old['email'], $old['name'] );
+	}
 
 	return array( 'ok' => true );
 }
@@ -463,4 +492,58 @@ function harbour_email_image_path( int $att_id ): string {
 		}
 	}
 	return $full;
+}
+
+/* -------------------------------------------------------------------------
+ * Marketing opt-in → Postbag mailing list
+ * ---------------------------------------------------------------------- */
+
+/**
+ * The Postbag list that enquiry-form marketing opt-ins join. Reads the Postbag
+ * connector's configured default list, falls back to the known slug, and is
+ * filterable (return '' to disable list capture without touching the form).
+ *
+ * @return string
+ */
+function harbour_marketing_list_slug(): string {
+	$slug = '';
+	if ( is_callable( array( '\\Postbag\\Settings', 'uicore_default_list' ) ) ) {
+		$slug = (string) \Postbag\Settings::uicore_default_list();
+	}
+	if ( '' === $slug ) {
+		$slug = 'tree-care-tips-news';
+	}
+	return (string) apply_filters( 'harbour_marketing_list_slug', $slug );
+}
+
+/**
+ * Subscribe an enquirer who ticked the marketing opt-in to the Postbag list.
+ *
+ * A safe no-op when the Postbag connector is inactive. The connector follows the
+ * site's mode — connected to Corantr, Corantr signs them up and sends the double
+ * opt-in confirmation — and \Postbag\Api::subscribe() never throws, so a mailing
+ * list problem can never disturb the enquiry the visitor actually came to send.
+ *
+ * @param string $email Enquirer email (already validated upstream).
+ * @param string $name  Enquirer name.
+ */
+function harbour_subscribe_marketing( string $email, string $name ): void {
+	if ( ! is_email( $email ) || ! class_exists( '\\Postbag\\Api' ) ) {
+		return;
+	}
+	$slug = harbour_marketing_list_slug();
+	if ( '' === $slug ) {
+		return;
+	}
+	\Postbag\Api::subscribe(
+		$slug,
+		$email,
+		'' !== $name ? $name : null,
+		array(
+			'source'          => 'harbour-enquiry',
+			'ip'              => harbour_client_ip(),
+			'user_agent'      => isset( $_SERVER['HTTP_USER_AGENT'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ) : '',
+			'wording_version' => 'harbour-enquiry-v1',
+		)
+	);
 }

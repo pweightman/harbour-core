@@ -1,9 +1,11 @@
 <?php
 /**
- * Cookie consent + Google Consent Mode v2.
+ * Cookie consent + Google Consent Mode v2 + Meta Pixel.
  *
- * Analytics on this site is loaded by Site Kit (gtag.js). UK law (PECR / UK
- * GDPR) requires consent before analytics cookies are set, so we:
+ * Analytics is loaded by Site Kit (gtag.js); advertising measurement by the Meta
+ * Pixel (harbour_meta_pixel_head(), below). Both are gated by the same banner.
+ * UK law (PECR / UK GDPR) requires consent before analytics cookies are set, so
+ * we:
  *
  *   1. Set Consent Mode defaults to "denied" as early as possible in <head>,
  *      before Site Kit's gtag config runs, so GA4 starts in consent mode and
@@ -83,6 +85,53 @@ function harbour_consent_nonce_attr(): string {
 	return $nonce ? ' nonce="' . esc_attr( $nonce ) . '"' : '';
 }
 
+/* -------------------------------------------------------------------------
+ * Meta (Facebook) Pixel — consent-gated through the same banner as GA.
+ * ---------------------------------------------------------------------- */
+
+/**
+ * The Meta Pixel ID (digits only), or '' when none is set. Filterable, so it can
+ * be overridden or cleared without a code change (return '' to switch it off).
+ *
+ * @return string
+ */
+function harbour_meta_pixel_id(): string {
+	$id = (string) apply_filters( 'harbour_meta_pixel_id', '1131744916411102' );
+	return (string) preg_replace( '/\D+/', '', $id );
+}
+
+/**
+ * Print the Meta Pixel in the head, gated by the same consent choice as GA.
+ *
+ * The pixel loads with consent REVOKED, so it sets no cookies and sends nothing
+ * until the visitor agrees: the PageView is queued and only delivered once
+ * consent is granted — on load when they have already accepted (localStorage),
+ * live from the banner's Accept button, or immediately when the consent banner
+ * is switched off. Logged-in users are skipped (as GA excludes them), and there
+ * is deliberately no <noscript> fallback, so a no-JS visitor is never tracked
+ * without a consent signal.
+ */
+function harbour_meta_pixel_head(): void {
+	$id = harbour_meta_pixel_id();
+	if ( '' === $id || is_user_logged_in() ) {
+		return;
+	}
+	// Grant on load when the banner is off (no gating, like GA), otherwise only
+	// if the visitor has already accepted.
+	$gate = harbour_consent_enabled()
+		? "try{if(window.localStorage&&localStorage.getItem('harbour_consent')==='granted'){fbq('consent','grant');}}catch(e){}"
+		: "fbq('consent','grant');";
+	?>
+<script<?php echo harbour_consent_nonce_attr(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static attribute string. ?>>
+!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+fbq('consent','revoke');
+fbq('init',<?php echo wp_json_encode( $id ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- wp_json_encode output is safe in a script context. ?>);
+fbq('track','PageView'); <?php echo $gate; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static consent-gate string. ?>
+</script>
+	<?php
+}
+add_action( 'wp_head', 'harbour_meta_pixel_head', 1 );
+
 /**
  * Print the banner markup, styles and behaviour in the footer.
  */
@@ -110,7 +159,7 @@ function harbour_consent_banner(): void {
 </style>
 <div class="harbour-consent" id="harbour-consent" role="dialog" aria-live="polite" aria-label="Cookie consent" hidden>
 	<h2>Cookies</h2>
-	<p>We'd like to use Google Analytics to see how people use the site, which sets cookies. Nothing is set until you choose.
+	<p>We'd like to use cookies to see how people use the site (Google Analytics) and for advertising (Meta). Nothing is set until you choose.
 	<?php
 	if ( $privacy ) :
 		?>
@@ -130,8 +179,8 @@ function harbour_consent_banner(): void {
 	function wpConsent(allow){if(typeof window.wp_set_consent==='function'){var v=allow?'allow':'deny';window.wp_set_consent('statistics',v);window.wp_set_consent('marketing',v);}}
 	function show(){el.hidden=false;}
 	function hide(){el.hidden=true;}
-	function accept(){if(typeof gtag==='function'){gtag('consent','update',<?php echo $granted; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- wp_json_encode output is safe in a script context. ?>);}save('granted');wpConsent(true);hide();}
-	function reject(){save('denied');wpConsent(false);hide();}
+	function accept(){if(typeof gtag==='function'){gtag('consent','update',<?php echo $granted; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- wp_json_encode output is safe in a script context. ?>);}if(typeof fbq==='function'){fbq('consent','grant');}save('granted');wpConsent(true);hide();}
+	function reject(){if(typeof fbq==='function'){fbq('consent','revoke');}save('denied');wpConsent(false);hide();}
 	el.addEventListener('click',function(e){var b=e.target.closest('[data-harbour-consent]');if(!b){return;}if(b.getAttribute('data-harbour-consent')==='accept'){accept();}else{reject();}});
 	// Let any "Cookie settings" link re-open the banner.
 	document.addEventListener('click',function(e){var t=e.target.closest('.harbour-cookie-settings,a[href="#cookie-settings"]');if(t){e.preventDefault();show();}});

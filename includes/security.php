@@ -66,3 +66,27 @@ function harbour_rate_ok( string $bucket, int $max = 5, int $window = HOUR_IN_SE
 	set_transient( $key, $count + 1, $window );
 	return true;
 }
+
+/**
+ * Guard against duplicate submissions of the same content within a short window.
+ *
+ * Keyed on a fingerprint of the submitted fields rather than the client IP, so
+ * it catches a user double-clicking Send, a browser retrying a slow POST, and a
+ * CDN replaying the request — none of which the per-IP rate limiter can see
+ * reliably behind Cloudflare, which masks REMOTE_ADDR. The first call for a
+ * fingerprint returns true (proceed) and records it; any identical call inside
+ * the window returns false (it's a repeat — do not create a second record).
+ *
+ * @param string $bucket      Namespace, e.g. 'enquiry'.
+ * @param string $fingerprint Stable hash of the submission's identifying fields.
+ * @param int    $window      How long a repeat is treated as a duplicate, seconds.
+ * @return bool True if this is the first time we've seen it (proceed).
+ */
+function harbour_is_fresh_submission( string $bucket, string $fingerprint, int $window = 120 ): bool {
+	$key = 'harbour_dedup_' . $bucket . '_' . md5( $fingerprint );
+	if ( get_transient( $key ) ) {
+		return false;
+	}
+	set_transient( $key, 1, $window );
+	return true;
+}
